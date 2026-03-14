@@ -14,8 +14,6 @@
   --ring: rgba(241, 200, 91, 0.35);
   --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.48), 0 10px 24px rgba(0, 0, 0, 0.3);
   --shadow-2: 0 18px 34px rgba(0, 0, 0, 0.46), 0 0 0 1px rgba(241, 200, 91, 0.16);
-  --bg-parallax-mid: 0px;
-  --bg-parallax-top: 0px;
 }
 
 * {
@@ -52,8 +50,6 @@ body::before {
     radial-gradient(circle at 80% 18%, rgba(216, 170, 60, 0.14), transparent 42%),
     radial-gradient(circle at 16% 78%, rgba(76, 121, 199, 0.14), transparent 48%),
     repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 120px);
-  transform: translate3d(0, var(--bg-parallax-mid), 0);
-  will-change: transform;
 }
 
 body::after {
@@ -66,8 +62,6 @@ body::after {
     linear-gradient(120deg, rgba(255, 255, 255, 0) 38%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0) 62%),
     radial-gradient(circle at 84% 14%, rgba(216, 170, 60, 0.1), transparent 50%),
     radial-gradient(circle at 12% 12%, rgba(76, 121, 199, 0.1), transparent 56%);
-  transform: translate3d(0, var(--bg-parallax-top), 0);
-  will-change: transform;
 }
 
 .page-shell {
@@ -563,8 +557,8 @@ select:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body::before,
-  body::after {
-    transform: translate3d(0, 0, 0);
+  .spotlight-edge-cue,
+  .spotlight-image-arrow {
+    animation: none;
   }
 }
