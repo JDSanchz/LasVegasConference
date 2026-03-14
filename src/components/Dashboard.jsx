@@ -86,6 +86,8 @@ const DEFAULT_CAMPAIGN_LINK_VALUES = {
   term: "",
   content: "",
 };
+const UTM_INFO_TEXT =
+  "UTM tags are URL parameters that identify traffic source and campaign performance, so each lead can be attributed by source, medium, and campaign in reporting.";
 
 function getDefaultCampaignBaseUrl() {
   if (typeof window === "undefined") {
@@ -190,6 +192,7 @@ export default function Dashboard() {
     ...DEFAULT_CAMPAIGN_LINK_VALUES,
   });
   const [campaignLinkStatus, setCampaignLinkStatus] = useState({ type: "idle", message: "" });
+  const [showUtmInfo, setShowUtmInfo] = useState(false);
 
   const clearDashboardAccess = useCallback(() => {
     try {
@@ -240,6 +243,23 @@ export default function Dashboard() {
       };
     });
   }, []);
+
+  useEffect(() => {
+    if (!showUtmInfo) {
+      return undefined;
+    }
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setShowUtmInfo(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [showUtmInfo]);
 
   useEffect(() => {
     if (!dashboardUnlocked) {
@@ -611,6 +631,17 @@ export default function Dashboard() {
       <section className="dashboard-tools-grid">
         <article className="dashboard-link-generator surface-card">
           <h2>Marketing Campaign Link Generator</h2>
+          <button
+            type="button"
+            className="dashboard-link-info-btn"
+            aria-label="What is UTM?"
+            aria-haspopup="dialog"
+            aria-expanded={showUtmInfo}
+            aria-controls="utm-info-modal"
+            onClick={() => setShowUtmInfo(true)}
+          >
+            i
+          </button>
           <p>Build tracked links by adjusting source, medium, and campaign.</p>
 
           <div className="dashboard-link-generator-form">
@@ -634,7 +665,6 @@ export default function Dashboard() {
                 type="text"
                 value={campaignLinkForm.source}
                 onChange={handleCampaignLinkFieldChange}
-                list="utm-source-options"
                 placeholder="newsletter"
               />
             </div>
@@ -665,7 +695,6 @@ export default function Dashboard() {
                 type="text"
                 value={campaignLinkForm.campaign}
                 onChange={handleCampaignLinkFieldChange}
-                list="utm-campaign-options"
                 placeholder="spring-growth-summit"
               />
             </div>
@@ -694,20 +723,6 @@ export default function Dashboard() {
               />
             </div>
 
-            <datalist id="utm-source-options">
-              {UTM_SOURCES.map((source) => (
-                <option key={source} value={source} />
-              ))}
-              <option value="email" />
-              <option value="sms" />
-              <option value="direct_mail" />
-            </datalist>
-
-            <datalist id="utm-campaign-options">
-              {UTM_CAMPAIGNS.map((campaign) => (
-                <option key={campaign} value={campaign} />
-              ))}
-            </datalist>
           </div>
 
           <div className="dashboard-link-output">
@@ -738,6 +753,36 @@ export default function Dashboard() {
           </div>
         </article>
       </section>
+
+      {showUtmInfo ? (
+        <div
+          className="dashboard-modal-backdrop"
+          role="presentation"
+          onClick={() => setShowUtmInfo(false)}
+        >
+          <div
+            className="dashboard-modal surface-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="utm-info-modal-title"
+            id="utm-info-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="dashboard-modal-head">
+              <h3 id="utm-info-modal-title">What Is UTM?</h3>
+              <button
+                type="button"
+                className="dashboard-modal-close-btn"
+                aria-label="Close UTM info modal"
+                onClick={() => setShowUtmInfo(false)}
+              >
+                x
+              </button>
+            </div>
+            <p>{UTM_INFO_TEXT}</p>
+          </div>
+        </div>
+      ) : null}
 
       <section className="dashboard-chart-grid">
         <article className="dashboard-chart-card surface-card">

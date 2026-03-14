@@ -798,12 +798,109 @@ select:focus-visible {
 }
 
 .dashboard-link-generator {
+  position: relative;
   padding: 1rem;
 }
 
+.dashboard-link-info-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--primary-strong);
+  font: inherit;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.dashboard-link-info-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.48);
+}
+
+.dashboard-link-info-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--ring);
+}
+
+.dashboard-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1450;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.dashboard-modal {
+  width: min(480px, calc(100vw - 2rem));
+  padding: 1rem;
+}
+
+.dashboard-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.dashboard-modal h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.dashboard-modal-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--primary-strong);
+  font: inherit;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.dashboard-modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.48);
+}
+
+.dashboard-modal-close-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--ring);
+}
+
+.dashboard-modal p {
+  margin: 0.6rem 0 0;
+  color: #e4d5b8;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
 .dashboard-link-generator h2 {
+  margin: 0;
   margin-bottom: 0.25rem;
+  padding-right: 2.2rem;
   font-size: 1.2rem;
+  line-height: 1.2;
 }
 
 .dashboard-link-generator p {
