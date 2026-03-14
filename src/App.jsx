@@ -81,16 +81,16 @@ const initialFormState = {
 
 const valueCards = [
   {
-    title: "Private Access to Decision-Makers",
-    text: "Connect directly with founders, investors, and executives in curated networking sessions designed for serious conversations, not crowded conferences.",
+    title: "Curated Executive Network",
+    text: "Meet proven operators and investors ready for focused, high-value conversations.",
   },
   {
-    title: "Actionable Growth Strategies",
-    text: "Learn proven frameworks, case studies, and tactics from operators actively scaling companies and driving measurable revenue growth.",
+    title: "Proven Growth Playbooks",
+    text: "Leave with strategies top teams use to accelerate pipeline and revenue.",
   },
   {
-    title: "High-Value Deal Flow",
-    text: "Discover partnership opportunities, new clients, and strategic collaborations with professionals actively looking to do business.",
+    title: "Qualified Deal Opportunities",
+    text: "Find partners, clients, and capital sources actively seeking new business relationships.",
   },
 ];
 
@@ -330,7 +330,7 @@ export default function App() {
         height="0"
       >
         <filter
-          id="liquid-glass-filter"
+          id="container-glass"
           x="-20%"
           y="-20%"
           width="140%"
@@ -352,6 +352,33 @@ export default function App() {
             in="SourceGraphic"
             in2="liquid-map"
             scale={liquidGlass.scale}
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+        <filter
+          id="btn-glass"
+          x="-25%"
+          y="-25%"
+          width="150%"
+          height="150%"
+          colorInterpolationFilters="sRGB"
+        >
+          {liquidGlass.dataUrl ? (
+            <feImage
+              href={liquidGlass.dataUrl}
+              x="0%"
+              y="0%"
+              width="100%"
+              height="100%"
+              preserveAspectRatio="none"
+              result="btn-map"
+            />
+          ) : null}
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="btn-map"
+            scale={Math.max(10, Math.round(liquidGlass.scale * 0.72))}
             xChannelSelector="R"
             yChannelSelector="G"
           />
@@ -382,7 +409,7 @@ export default function App() {
                 Request My Invite
               </a>
               <a
-                className="btn btn-ghost"
+                className="btn btn-ghost glass-btn"
                 href="#value"
                 onClick={(event) => handleAnimatedNav(event, "value")}
               >
@@ -440,7 +467,7 @@ export default function App() {
             <div className="spotlight-controls" aria-label="Executive carousel controls">
               <button
                 type="button"
-                className="spotlight-control-btn"
+                className="spotlight-control-btn glass-btn"
                 onClick={() => scrollSpotlight("prev")}
                 aria-label="Previous executives"
               >
@@ -448,7 +475,7 @@ export default function App() {
               </button>
               <button
                 type="button"
-                className="spotlight-control-btn"
+                className="spotlight-control-btn glass-btn"
                 onClick={() => scrollSpotlight("next")}
                 aria-label="Next executives"
               >
@@ -689,7 +716,7 @@ export default function App() {
             </div>
 
             <button type="submit" className="btn btn-primary full-width">
-              {status.type === "loading" ? "Submitting..." : "Reserve My Spot"}
+              {status.type === "loading" ? "Submitting..." : "Request My Invite"}
             </button>
 
             {status.type !== "idle" ? (

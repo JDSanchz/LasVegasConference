@@ -44,17 +44,21 @@ function nearestEdgeDirection(x, y) {
   const top = y;
   const bottom = 1 - y;
   const minDistance = Math.min(left, right, top, bottom);
+  const epsilon = 0.0001;
+  const leftWeight = 1 / (left + epsilon);
+  const rightWeight = 1 / (right + epsilon);
+  const topWeight = 1 / (top + epsilon);
+  const bottomWeight = 1 / (bottom + epsilon);
 
-  if (minDistance === left) {
-    return { x: 1, y: 0, distance: left };
-  }
-  if (minDistance === right) {
-    return { x: -1, y: 0, distance: right };
-  }
-  if (minDistance === top) {
-    return { x: 0, y: 1, distance: top };
-  }
-  return { x: 0, y: -1, distance: bottom };
+  const vx = leftWeight - rightWeight;
+  const vy = topWeight - bottomWeight;
+  const length = Math.hypot(vx, vy) || 1;
+
+  return {
+    x: vx / length,
+    y: vy / length,
+    distance: minDistance,
+  };
 }
 
 function computeMagnitudeSamples({
@@ -119,7 +123,8 @@ export function createLiquidGlassMap({
       const t = clamp(borderDistance / bezel, 0, 1);
       const sampleIndex = Math.round(t * (samples - 1));
       const falloff = 1 - smootherstep(t);
-      const magnitude = normalized[sampleIndex] * falloff;
+      const edgeGuard = smootherstep(clamp(t / 0.12, 0, 1));
+      const magnitude = normalized[sampleIndex] * falloff * edgeGuard;
 
       const dx = edge.x * magnitude;
       const dy = edge.y * magnitude;
