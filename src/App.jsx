@@ -256,43 +256,6 @@ export default function App() {
     saveStoredUtm(merged);
   }, []);
 
-  useEffect(() => {
-    const root = document.documentElement;
-
-    if (shouldReduceMotion) {
-      root.style.setProperty("--bg-parallax-mid", "0px");
-      root.style.setProperty("--bg-parallax-top", "0px");
-      return undefined;
-    }
-
-    let frameId = 0;
-
-    const update = () => {
-      frameId = 0;
-      const scrollY = window.scrollY || window.pageYOffset || 0;
-      root.style.setProperty("--bg-parallax-mid", `${Math.round(scrollY * -0.1)}px`);
-      root.style.setProperty("--bg-parallax-top", `${Math.round(scrollY * -0.18)}px`);
-    };
-
-    const onScroll = () => {
-      if (frameId === 0) {
-        frameId = window.requestAnimationFrame(update);
-      }
-    };
-
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (frameId) {
-        window.cancelAnimationFrame(frameId);
-      }
-    };
-  }, [shouldReduceMotion]);
-
   const campaignSource = useMemo(() => {
     return utm.utm_source || "Direct";
   }, [utm]);
@@ -357,7 +320,7 @@ export default function App() {
     }
 
     const timerId = window.setInterval(() => {
-      scrollSpotlightTrack(spotlightTrackRef.current, "next", { wrap: true });
+      scrollSpotlightTrack(spotlightTrackRef.current, "next");
     }, 3000);
 
     return () => {
