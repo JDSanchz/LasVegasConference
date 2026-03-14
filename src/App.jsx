@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
-import { createLiquidGlassMap } from "./liquidGlass";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 
 const UTM_KEYS = [
   "utm_source",
@@ -74,9 +73,7 @@ const initialFormState = {
   email: "",
   company: "",
   jobTitle: "",
-  phone: "",
-  industry: "",
-  companySize: "",
+  socialHandle: "",
 };
 
 const valueCards = [
@@ -144,6 +141,38 @@ const credibilityStats = [
 
 const credibilityClosingStat = { key: "days", target: 2, suffix: " Days", label: "Of focused deal flow" };
 
+function ParallaxSection({
+  children,
+  className = "",
+  direction = 1,
+  intensity = 26,
+  style,
+  ...props
+}) {
+  const sectionRef = useRef(null);
+  const shouldReduceMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
+  const y = useTransform(
+    scrollYProgress,
+    [0, 1],
+    shouldReduceMotion ? [0, 0] : [intensity * direction, -intensity * direction],
+  );
+
+  return (
+    <motion.section
+      ref={sectionRef}
+      className={`parallax-section ${className}`.trim()}
+      style={style ? { ...style, y } : { y }}
+      {...props}
+    >
+      {children}
+    </motion.section>
+  );
+}
+
 export default function App() {
   const [formData, setFormData] = useState(initialFormState);
   const [utm, setUtm] = useState({});
@@ -156,10 +185,6 @@ export default function App() {
     days: 0,
   });
   const [spotlightHintDismissed, setSpotlightHintDismissed] = useState(false);
-  const [liquidGlass, setLiquidGlass] = useState({
-    dataUrl: "",
-    scale: 20,
-  });
   const spotlightTrackRef = useRef(null);
 
   useEffect(() => {
@@ -169,23 +194,6 @@ export default function App() {
 
     setUtm(merged);
     saveStoredUtm(merged);
-  }, []);
-
-  useEffect(() => {
-    const { dataUrl, maxDisplacement } = createLiquidGlassMap({
-      size: 128,
-      samples: 127,
-      bezel: 0.25,
-      ior: 1.46,
-      thickness: 22,
-      surface: "convex-squircle",
-    });
-
-    const scaledDisplacement = Math.round(Math.max(14, Math.min(36, maxDisplacement * 1.45)));
-    setLiquidGlass({
-      dataUrl,
-      scale: scaledDisplacement,
-    });
   }, []);
 
   const campaignSource = useMemo(() => {
@@ -317,69 +325,7 @@ export default function App() {
   }
 
   return (
-    <div className={`page-shell${liquidGlass.dataUrl ? " liquid-ready" : ""}`}>
-      <svg
-        className="liquid-filter-defs"
-        aria-hidden="true"
-        focusable="false"
-        width="0"
-        height="0"
-      >
-        <filter
-          id="container-glass"
-          x="-20%"
-          y="-20%"
-          width="140%"
-          height="140%"
-          colorInterpolationFilters="sRGB"
-        >
-          {liquidGlass.dataUrl ? (
-            <feImage
-              href={liquidGlass.dataUrl}
-              x="0%"
-              y="0%"
-              width="100%"
-              height="100%"
-              preserveAspectRatio="none"
-              result="liquid-map"
-            />
-          ) : null}
-          <feDisplacementMap
-            in="SourceGraphic"
-            in2="liquid-map"
-            scale={liquidGlass.scale}
-            xChannelSelector="R"
-            yChannelSelector="G"
-          />
-        </filter>
-        <filter
-          id="btn-glass"
-          x="-25%"
-          y="-25%"
-          width="150%"
-          height="150%"
-          colorInterpolationFilters="sRGB"
-        >
-          {liquidGlass.dataUrl ? (
-            <feImage
-              href={liquidGlass.dataUrl}
-              x="0%"
-              y="0%"
-              width="100%"
-              height="100%"
-              preserveAspectRatio="none"
-              result="btn-map"
-            />
-          ) : null}
-          <feDisplacementMap
-            in="SourceGraphic"
-            in2="btn-map"
-            scale={Math.max(10, Math.round(liquidGlass.scale * 0.72))}
-            xChannelSelector="R"
-            yChannelSelector="G"
-          />
-        </filter>
-      </svg>
+    <div className="page-shell">
       <header className="hero" id="top">
         <motion.div
           className="hero-grid"
@@ -387,7 +333,7 @@ export default function App() {
           initial="hidden"
           animate="show"
         >
-          <motion.div className="hero-content glass-panel" variants={fadeUp}>
+          <motion.div className="hero-content surface-card" variants={fadeUp}>
             <p className="eyebrow">Las Vegas Executive Conference 2026</p>
             <h1>
               The Invite-Only Room Where High-Value Deals Start.
@@ -405,7 +351,7 @@ export default function App() {
                 Request My Invite
               </a>
               <a
-                className="btn btn-ghost glass-btn"
+                className="btn btn-ghost"
                 href="#value"
                 onClick={(event) => handleAnimatedNav(event, "value")}
               >
@@ -420,9 +366,11 @@ export default function App() {
       </header>
 
       <main>
-        <motion.section
+        <ParallaxSection
           className="section"
           id="value"
+          direction={1}
+          intensity={28}
           variants={stagger}
           initial="hidden"
           whileInView="show"
@@ -435,17 +383,19 @@ export default function App() {
           </motion.p>
           <motion.div className="card-grid" variants={stagger}>
             {valueCards.map((card) => (
-              <motion.article key={card.title} className="value-card glass-panel" variants={fadeUp}>
+              <motion.article key={card.title} className="value-card surface-card" variants={fadeUp}>
                 <h3>{card.title}</h3>
                 <p>{card.text}</p>
               </motion.article>
             ))}
           </motion.div>
-        </motion.section>
+        </ParallaxSection>
 
-        <motion.section
+        <ParallaxSection
           className="section spotlight-section"
           id="executive-spotlight"
+          direction={-1}
+          intensity={22}
           variants={stagger}
           initial="hidden"
           whileInView="show"
@@ -463,7 +413,7 @@ export default function App() {
             <div className="spotlight-controls" aria-label="Executive carousel controls">
               <button
                 type="button"
-                className="spotlight-control-btn glass-btn"
+                className="spotlight-control-btn"
                 onClick={() => scrollSpotlight("prev")}
                 aria-label="Previous executives"
               >
@@ -471,7 +421,7 @@ export default function App() {
               </button>
               <button
                 type="button"
-                className="spotlight-control-btn glass-btn"
+                className="spotlight-control-btn"
                 onClick={() => scrollSpotlight("next")}
                 aria-label="Next executives"
               >
@@ -488,7 +438,7 @@ export default function App() {
               onScroll={handleSpotlightScroll}
             >
               {spotlightExecutives.map((executive) => (
-                <article className="spotlight-card glass-panel" key={executive.name}>
+                <article className="spotlight-card surface-card" key={executive.name}>
                   <img
                     className="spotlight-photo"
                     src={executive.image}
@@ -513,11 +463,13 @@ export default function App() {
               </div>
             ) : null}
           </div>
-        </motion.section>
+        </ParallaxSection>
 
-        <motion.section
+        <ParallaxSection
           className="section keynote-section"
           id="keynotes"
+          direction={1}
+          intensity={24}
           variants={stagger}
           initial="hidden"
           whileInView="show"
@@ -531,7 +483,7 @@ export default function App() {
             {keynotes.map((keynote) => (
               <motion.article
                 key={keynote.title}
-                className="keynote-card glass-panel"
+                className="keynote-card surface-card"
                 variants={fadeUp}
               >
                 <div className="keynote-media">
@@ -552,10 +504,12 @@ export default function App() {
               </motion.article>
             ))}
           </motion.div>
-        </motion.section>
+        </ParallaxSection>
 
-        <motion.section
+        <ParallaxSection
           className="section credibility"
+          direction={-1}
+          intensity={20}
           variants={stagger}
           initial="hidden"
           whileInView="show"
@@ -565,7 +519,7 @@ export default function App() {
           <motion.h2 variants={fadeUp}>Built for Decision Makers</motion.h2>
           <motion.div className="credibility-grid" variants={stagger}>
             {credibilityStats.map((stat) => (
-              <motion.div className="stat glass-panel" variants={fadeUp} key={stat.key}>
+              <motion.div className="stat surface-card" variants={fadeUp} key={stat.key}>
                 <p
                   className={`stat-number${credibilityAnimated ? " stat-number-animated" : ""}`}
                 >
@@ -575,7 +529,7 @@ export default function App() {
                 <p className="stat-label">{stat.label}</p>
               </motion.div>
             ))}
-            <motion.div className="attendee-list glass-panel" variants={fadeUp}>
+            <motion.div className="attendee-list surface-card" variants={fadeUp}>
               <p
                 className={`stat-number${credibilityAnimated ? " stat-number-animated" : ""}`}
               >
@@ -583,7 +537,7 @@ export default function App() {
               </p>
               <p className="stat-label">Networking Sessions</p>
             </motion.div>
-            <motion.div className="stat glass-panel" variants={fadeUp}>
+            <motion.div className="stat surface-card" variants={fadeUp}>
               <p
                 className={`stat-number${credibilityAnimated ? " stat-number-animated" : ""}`}
               >
@@ -593,11 +547,13 @@ export default function App() {
               <p className="stat-label">{credibilityClosingStat.label}</p>
             </motion.div>
           </motion.div>
-        </motion.section>
+        </ParallaxSection>
 
-        <motion.section
-          className="section form-section glass-panel"
+        <ParallaxSection
+          className="section form-section surface-card"
           id="lead-form"
+          direction={1}
+          intensity={16}
           variants={stagger}
           initial="hidden"
           whileInView="show"
@@ -664,46 +620,16 @@ export default function App() {
             </div>
 
             <div className="form-field">
-              <label htmlFor="phone">Phone</label>
+              <label htmlFor="socialHandle">Social Handle</label>
               <input
-                id="phone"
-                name="phone"
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                value={formData.phone}
+                id="socialHandle"
+                name="socialHandle"
+                type="text"
+                autoComplete="off"
+                value={formData.socialHandle}
                 onChange={handleChange}
                 required
               />
-            </div>
-
-            <div className="form-field">
-              <label htmlFor="industry">Industry (Optional)</label>
-              <input
-                id="industry"
-                name="industry"
-                type="text"
-                autoComplete="off"
-                value={formData.industry}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className="form-field">
-              <label htmlFor="companySize">Company Size (Optional)</label>
-              <select
-                id="companySize"
-                name="companySize"
-                value={formData.companySize}
-                onChange={handleChange}
-              >
-                <option value="">Select company size</option>
-                <option value="1-10">1-10</option>
-                <option value="11-50">11-50</option>
-                <option value="51-200">51-200</option>
-                <option value="201-500">201-500</option>
-                <option value="501+">501+</option>
-              </select>
             </div>
 
             <div className="form-field">
@@ -729,7 +655,7 @@ export default function App() {
               </p>
             ) : null}
           </motion.form>
-        </motion.section>
+        </ParallaxSection>
 
       </main>
     </div>
