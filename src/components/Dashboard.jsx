@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Area,
@@ -29,6 +29,7 @@ const dashboardGridTheme = themeQuartz.withPart(colorSchemeDarkBlue);
 
 const GENERATED_LEAD_COUNT = 10;
 const DASHBOARD_ACCESS_STORAGE_KEY = "lv_conf_dashboard_access_granted";
+const DASHBOARD_ACCESS_TTL_MS = 26 * 60 * 60 * 1000;
 const DASHBOARD_REQUIRED_PASSWORD = process.env.NEXT_PUBLIC_DASHBOARD_PASSWORD || "";
 const SOURCE_COLORS = ["#f1c85b", "#7dc8ff", "#8df4cb", "#ff9e7d", "#d6a9ff", "#ffe48f"];
 const FIRST_NAMES = [
@@ -170,18 +171,68 @@ export default function Dashboard() {
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  useEffect(() => {
+  const clearDashboardAccess = useCallback(() => {
     try {
-      const isUnlocked = localStorage.getItem(DASHBOARD_ACCESS_STORAGE_KEY) === "true";
-      setDashboardUnlocked(isUnlocked);
+      localStorage.removeItem(DASHBOARD_ACCESS_STORAGE_KEY);
     } catch {
-      setDashboardUnlocked(false);
+      // Ignore local storage errors in restricted browsers.
     }
-    setLoading(false);
   }, []);
 
-  async function loadLeads() {
+  const hasValidDashboardAccess = useCallback(() => {
+    try {
+      const unlockedAtRaw = localStorage.getItem(DASHBOARD_ACCESS_STORAGE_KEY);
+      if (!unlockedAtRaw) {
+        return false;
+      }
+
+      const unlockedAtMs = Number(unlockedAtRaw);
+      if (!Number.isFinite(unlockedAtMs)) {
+        clearDashboardAccess();
+        return false;
+      }
+
+      if (Date.now() - unlockedAtMs > DASHBOARD_ACCESS_TTL_MS) {
+        clearDashboardAccess();
+        return false;
+      }
+
+      return true;
+    } catch {
+      return false;
+    }
+  }, [clearDashboardAccess]);
+
+  useEffect(() => {
+    setDashboardUnlocked(hasValidDashboardAccess());
+    setLoading(false);
+  }, [hasValidDashboardAccess]);
+
+  useEffect(() => {
     if (!dashboardUnlocked) {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      if (!hasValidDashboardAccess()) {
+        setDashboardUnlocked(false);
+        setPasswordInput("");
+        setShowPassword(false);
+        setPasswordError("Dashboard session expired. Enter password again.");
+      }
+    }, 60 * 1000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [dashboardUnlocked, hasValidDashboardAccess]);
+
+  async function loadLeads() {
+    if (!dashboardUnlocked || !hasValidDashboardAccess()) {
+      if (dashboardUnlocked) {
+        setDashboardUnlocked(false);
+        setPasswordError("Dashboard session expired. Enter password again.");
+      }
       return;
     }
 
@@ -223,18 +274,14 @@ export default function Dashboard() {
     }
 
     if (passwordInput !== DASHBOARD_REQUIRED_PASSWORD) {
-      try {
-        localStorage.removeItem(DASHBOARD_ACCESS_STORAGE_KEY);
-      } catch {
-        // Ignore local storage errors in restricted browsers.
-      }
+      clearDashboardAccess();
       setDashboardUnlocked(false);
       setPasswordError("Incorrect password.");
       return;
     }
 
     try {
-      localStorage.setItem(DASHBOARD_ACCESS_STORAGE_KEY, "true");
+      localStorage.setItem(DASHBOARD_ACCESS_STORAGE_KEY, String(Date.now()));
     } catch {
       // Ignore local storage errors in restricted browsers.
     }

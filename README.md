@@ -1,5 +1,7 @@
 # Las Vegas Conference App (Next.js)
 
+This project is built with Next.js.
+
 Landing page + dashboard + API in one Next.js repo.
 
 ## Run locally
