@@ -452,8 +452,8 @@ export default function App() {
             </p>
           </motion.div>
           <motion.aside className="hero-logo-wall surface-card" variants={fadeUp} aria-label="Featured companies">
-            <p className="eyebrow">Who You Will Meet</p>
-            <p className="hero-logo-intro">Teams from high-performing companies join the room.</p>
+            <p className="eyebrow">WHO YOU&rsquo;LL MEET</p>
+            <p className="hero-logo-intro">Leaders from the world&rsquo;s most influential companies.</p>
             <div className="hero-logo-grid" role="list">
               {heroCompanyLogos.map((company) => (
                 <article className="hero-logo-card" key={company.name} role="listitem">
