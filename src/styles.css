@@ -323,36 +323,6 @@ select:focus-visible {
   margin-top: 1rem;
 }
 
-.spotlight-edge-cue {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 54px;
-  height: calc(100% - 0.25rem);
-  pointer-events: none;
-  background: linear-gradient(90deg, rgba(5, 5, 5, 0), rgba(5, 5, 5, 1));
-  animation: cuePulse 1.9s ease-in-out infinite;
-}
-
-.spotlight-image-arrow {
-  position: absolute;
-  right: 0.65rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 2rem;
-  height: 2rem;
-  border-radius: 999px;
-  border: 1px solid rgba(241, 200, 91, 0.58);
-  background: var(--surface);
-  display: grid;
-  place-items: center;
-  color: var(--primary-strong);
-  font-size: 1rem;
-  font-weight: 700;
-  pointer-events: none;
-  animation: arrowNudge 1.2s ease-in-out infinite;
-}
-
 .spotlight-card {
   flex: 0 0 100%;
   min-width: 0;
@@ -545,30 +515,6 @@ select:focus-visible {
   border: 1px solid rgba(255, 176, 96, 0.62);
 }
 
-@keyframes cuePulse {
-  0% {
-    opacity: 0.25;
-  }
-  50% {
-    opacity: 0.95;
-  }
-  100% {
-    opacity: 0.25;
-  }
-}
-
-@keyframes arrowNudge {
-  0% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(4px);
-  }
-  100% {
-    transform: translateX(0);
-  }
-}
-
 @media (min-width: 700px) {
   .hero {
     padding-top: 1.8rem;
@@ -584,11 +530,6 @@ select:focus-visible {
 
   .spotlight-controls {
     display: inline-flex;
-  }
-
-  .spotlight-edge-cue,
-  .spotlight-image-arrow {
-    display: none;
   }
 
   .keynote-grid {
@@ -622,11 +563,6 @@ select:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .spotlight-edge-cue,
-  .spotlight-image-arrow {
-    animation: none;
-  }
-
   body::before,
   body::after {
     transform: translate3d(0, 0, 0);

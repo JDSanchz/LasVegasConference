@@ -237,8 +237,15 @@ export default function App() {
     days: 0,
   });
   const [isMobileSpotlight, setIsMobileSpotlight] = useState(false);
-  const [spotlightHintDismissed, setSpotlightHintDismissed] = useState(false);
   const spotlightTrackRef = useRef(null);
+  const spotlightItemCount = spotlightExecutives.length;
+  const spotlightCarouselItems = useMemo(
+    () =>
+      isMobileSpotlight
+        ? [...spotlightExecutives, ...spotlightExecutives]
+        : spotlightExecutives,
+    [isMobileSpotlight],
+  );
 
   useEffect(() => {
     const urlUtm = getUtmFromUrl();
@@ -358,6 +365,15 @@ export default function App() {
     };
   }, [isMobileSpotlight, shouldReduceMotion]);
 
+  useEffect(() => {
+    const track = spotlightTrackRef.current;
+    if (!track) {
+      return;
+    }
+
+    track.scrollTo({ left: 0, behavior: "auto" });
+  }, [isMobileSpotlight]);
+
   function handleChange(event) {
     const { name, value } = event.target;
     setFormData((current) => ({
@@ -422,16 +438,24 @@ export default function App() {
   }
 
   function scrollSpotlight(direction) {
-    scrollSpotlightTrack(spotlightTrackRef.current, direction, { wrap: true });
+    scrollSpotlightTrack(spotlightTrackRef.current, direction);
   }
 
   function handleSpotlightScroll(event) {
-    if (spotlightHintDismissed) {
+    if (!isMobileSpotlight) {
       return;
     }
 
-    if (event.currentTarget.scrollLeft > 24) {
-      setSpotlightHintDismissed(true);
+    const track = event.currentTarget;
+    const { step } = getSpotlightStep(track);
+    const loopWidth = step * spotlightItemCount;
+
+    if (loopWidth <= 0) {
+      return;
+    }
+
+    if (track.scrollLeft >= loopWidth - 1) {
+      track.scrollLeft -= loopWidth;
     }
   }
 
@@ -548,8 +572,8 @@ export default function App() {
               ref={spotlightTrackRef}
               onScroll={handleSpotlightScroll}
             >
-              {spotlightExecutives.map((executive) => (
-                <article className="spotlight-card surface-card" key={executive.name}>
+              {spotlightCarouselItems.map((executive, index) => (
+                <article className="spotlight-card surface-card" key={`${executive.name}-${index}`}>
                   <img
                     className="spotlight-photo"
                     src={executive.image}
@@ -567,12 +591,6 @@ export default function App() {
                 </article>
               ))}
             </motion.div>
-            {!spotlightHintDismissed ? <div className="spotlight-edge-cue" aria-hidden="true" /> : null}
-            {!spotlightHintDismissed ? (
-              <div className="spotlight-image-arrow" aria-hidden="true">
-                →
-              </div>
-            ) : null}
           </div>
         </ParallaxSection>
 
