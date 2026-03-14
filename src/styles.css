@@ -369,12 +369,47 @@ select:focus-visible {
   overflow: hidden;
 }
 
+.spotlight-media {
+  position: relative;
+  width: 100%;
+  height: clamp(220px, 35vw, 300px);
+  overflow: hidden;
+  background: linear-gradient(160deg, #1c160d 0%, #0f0d09 100%);
+}
+
 .spotlight-photo {
   width: 100%;
   height: clamp(220px, 35vw, 300px);
   object-fit: cover;
   object-position: center;
   display: block;
+}
+
+.spotlight-media .spotlight-photo {
+  height: 100%;
+}
+
+.spotlight-video,
+.spotlight-photo-overlay {
+  position: absolute;
+  inset: 0;
+}
+
+.spotlight-video {
+  transition: opacity 420ms ease;
+}
+
+.spotlight-photo-overlay {
+  opacity: 0;
+  transition: opacity 420ms ease;
+}
+
+.spotlight-media-hidden {
+  opacity: 0;
+}
+
+.spotlight-media-visible {
+  opacity: 1;
 }
 
 .spotlight-card-content {

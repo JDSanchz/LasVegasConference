@@ -123,6 +123,7 @@ const spotlightExecutives = [
     title: "Investor",
     company: "",
     image: "/lv2.png",
+    video: "/elias.mp4",
     imageAlt: "Elias Ayub executive attendee",
   },
   {
@@ -190,6 +191,76 @@ function scrollSpotlightTrack(track, direction, options = {}) {
     left: Math.max(track.scrollLeft - step, 0),
     behavior,
   });
+}
+
+const SPOTLIGHT_VIDEO_LOOP_COUNT = 2;
+
+function SpotlightMedia({ executive, shouldPlayVideo }) {
+  const [loopCount, setLoopCount] = useState(0);
+  const [showImage, setShowImage] = useState(!shouldPlayVideo);
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    setLoopCount(0);
+    setShowImage(!shouldPlayVideo);
+  }, [shouldPlayVideo, executive.video]);
+
+  if (!shouldPlayVideo || !executive.video) {
+    return (
+      <img
+        className="spotlight-photo"
+        src={executive.image}
+        alt={executive.imageAlt}
+        loading="lazy"
+        decoding="async"
+      />
+    );
+  }
+
+  function handleVideoEnded() {
+    const nextLoopCount = loopCount + 1;
+
+    if (nextLoopCount < SPOTLIGHT_VIDEO_LOOP_COUNT) {
+      const videoElement = videoRef.current;
+      if (!videoElement) {
+        setShowImage(true);
+        return;
+      }
+
+      setLoopCount(nextLoopCount);
+      videoElement.currentTime = 0;
+      videoElement.play().catch(() => {
+        setShowImage(true);
+      });
+      return;
+    }
+
+    setLoopCount(nextLoopCount);
+    setShowImage(true);
+  }
+
+  return (
+    <div className="spotlight-media">
+      <video
+        ref={videoRef}
+        className={`spotlight-photo spotlight-video${showImage ? " spotlight-media-hidden" : ""}`}
+        src={executive.video}
+        muted
+        playsInline
+        autoPlay
+        preload="metadata"
+        onEnded={handleVideoEnded}
+        onError={() => setShowImage(true)}
+      />
+      <img
+        className={`spotlight-photo spotlight-photo-overlay${showImage ? " spotlight-media-visible" : ""}`}
+        src={executive.image}
+        alt={executive.imageAlt}
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+  );
 }
 
 export default function App() {
@@ -582,12 +653,9 @@ export default function App() {
             >
               {spotlightCarouselItems.map((executive, index) => (
                 <article className="spotlight-card surface-card" key={`${executive.name}-${index}`}>
-                  <img
-                    className="spotlight-photo"
-                    src={executive.image}
-                    alt={executive.imageAlt}
-                    loading="lazy"
-                    decoding="async"
+                  <SpotlightMedia
+                    executive={executive}
+                    shouldPlayVideo={Boolean(executive.video && index < spotlightItemCount)}
                   />
                   <div className="spotlight-card-content">
                     <h3>{executive.name}</h3>
