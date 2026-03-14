@@ -1,0 +1,366 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { AgGridReact } from "ag-grid-react";
+import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
+import { listLeadRequests } from "../api/client";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-quartz.css";
+
+ModuleRegistry.registerModules([AllCommunityModule]);
+
+const SOURCE_COLORS = ["#f1c85b", "#7dc8ff", "#8df4cb", "#ff9e7d", "#d6a9ff", "#ffe48f"];
+
+function formatDate(value) {
+  if (!value) {
+    return "Unknown";
+  }
+
+  let date;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split("-").map((part) => Number(part));
+    date = new Date(year, month - 1, day);
+  } else {
+    date = new Date(value);
+  }
+
+  if (Number.isNaN(date.getTime())) {
+    return "Unknown";
+  }
+
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+function formatDateTime(value) {
+  if (!value) {
+    return "Unknown";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Unknown";
+  }
+
+  return date.toLocaleString();
+}
+
+export default function Dashboard() {
+  const [leads, setLeads] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  async function loadLeads() {
+    setLoading(true);
+    setError("");
+
+    const response = await listLeadRequests();
+    if (!response.ok) {
+      setLeads([]);
+      setError(response.data?.error || "Failed to load dashboard data.");
+      setLoading(false);
+      return;
+    }
+
+    setLeads(Array.isArray(response.data?.leads) ? response.data.leads : []);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    loadLeads();
+  }, []);
+
+  const leadsSorted = useMemo(() => {
+    return [...leads].sort((left, right) => {
+      const leftDate = new Date(left.submittedAt || left.createdAt || 0).getTime();
+      const rightDate = new Date(right.submittedAt || right.createdAt || 0).getTime();
+      return rightDate - leftDate;
+    });
+  }, [leads]);
+
+  const submissionsByDay = useMemo(() => {
+    const buckets = new Map();
+
+    leadsSorted.forEach((lead) => {
+      const rawDate = lead.submittedAt || lead.createdAt;
+      const date = new Date(rawDate);
+      if (Number.isNaN(date.getTime())) {
+        return;
+      }
+
+      const dayKey = date.toISOString().slice(0, 10);
+      buckets.set(dayKey, (buckets.get(dayKey) || 0) + 1);
+    });
+
+    return [...buckets.entries()]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([date, submissions]) => ({
+        date,
+        label: formatDate(date),
+        submissions,
+      }));
+  }, [leadsSorted]);
+
+  const sourceDistribution = useMemo(() => {
+    const buckets = new Map();
+
+    leadsSorted.forEach((lead) => {
+      const source = lead.utm?.utm_source?.trim() || "Direct";
+      buckets.set(source, (buckets.get(source) || 0) + 1);
+    });
+
+    return [...buckets.entries()]
+      .sort((left, right) => right[1] - left[1])
+      .map(([source, value]) => ({ source, value }));
+  }, [leadsSorted]);
+
+  const companyDistribution = useMemo(() => {
+    const buckets = new Map();
+
+    leadsSorted.forEach((lead) => {
+      const company = lead.company?.trim() || "Unknown";
+      buckets.set(company, (buckets.get(company) || 0) + 1);
+    });
+
+    return [...buckets.entries()]
+      .sort((left, right) => right[1] - left[1])
+      .slice(0, 8)
+      .map(([company, leadsCount]) => ({ company, leadsCount }));
+  }, [leadsSorted]);
+
+  const uniqueCompanies = useMemo(() => {
+    return new Set(leadsSorted.map((lead) => lead.company?.trim()).filter(Boolean)).size;
+  }, [leadsSorted]);
+
+  const tableRows = useMemo(() => {
+    return leadsSorted.map((lead) => ({
+      id: lead.id || "",
+      submittedAt: formatDateTime(lead.submittedAt || lead.createdAt),
+      firstName: lead.firstName || "",
+      lastName: lead.lastName || "",
+      email: lead.email || "",
+      jobTitle: lead.jobTitle || "",
+      company: lead.company || "",
+      socialHandle: lead.socialHandle || "",
+      source: lead.utm?.utm_source || "Direct",
+      medium: lead.utm?.utm_medium || "",
+      campaign: lead.utm?.utm_campaign || "",
+      landingHost: lead.landingHost || "",
+      landingPath: lead.landingPath || "",
+    }));
+  }, [leadsSorted]);
+
+  const columnDefs = useMemo(
+    () => [
+      { field: "submittedAt", headerName: "Submitted", minWidth: 190, pinned: "left" },
+      { field: "firstName", headerName: "First Name", minWidth: 130 },
+      { field: "lastName", headerName: "Last Name", minWidth: 130 },
+      { field: "email", headerName: "Email", minWidth: 230 },
+      { field: "jobTitle", headerName: "Job Title", minWidth: 180 },
+      { field: "company", headerName: "Company", minWidth: 170 },
+      { field: "socialHandle", headerName: "Social Handle", minWidth: 150 },
+      { field: "source", headerName: "UTM Source", minWidth: 130 },
+      { field: "medium", headerName: "UTM Medium", minWidth: 130 },
+      { field: "campaign", headerName: "UTM Campaign", minWidth: 170 },
+      { field: "landingHost", headerName: "Landing Host", minWidth: 170 },
+      { field: "landingPath", headerName: "Landing Path", minWidth: 140 },
+      { field: "id", headerName: "Lead ID", minWidth: 240 },
+    ],
+    [],
+  );
+
+  const defaultColDef = useMemo(
+    () => ({
+      sortable: true,
+      resizable: true,
+      filter: true,
+      floatingFilter: false,
+      suppressHeaderMenuButton: true,
+    }),
+    [],
+  );
+
+  return (
+    <div className="page-shell dashboard-page">
+      <header className="dashboard-header surface-card">
+        <div>
+          <p className="eyebrow">Invite Analytics</p>
+          <h1>Lead Dashboard</h1>
+          <p className="section-intro">
+            Live view of all request data currently stored in your browser local storage.
+          </p>
+        </div>
+        <div className="dashboard-header-actions">
+          <button type="button" className="btn btn-primary" onClick={loadLeads}>
+            Refresh Data
+          </button>
+          <Link to="/" className="btn btn-ghost">
+            Back To Landing
+          </Link>
+        </div>
+      </header>
+
+      <section className="dashboard-kpi-grid">
+        <article className="dashboard-kpi surface-card">
+          <p>Total Leads</p>
+          <strong>{leadsSorted.length}</strong>
+        </article>
+        <article className="dashboard-kpi surface-card">
+          <p>Unique Companies</p>
+          <strong>{uniqueCompanies}</strong>
+        </article>
+        <article className="dashboard-kpi surface-card">
+          <p>Top Source</p>
+          <strong>{sourceDistribution[0]?.source || "N/A"}</strong>
+        </article>
+      </section>
+
+      {error ? (
+        <p className="status-message status-warning">{error}</p>
+      ) : null}
+
+      <section className="dashboard-chart-grid">
+        <article className="dashboard-chart-card surface-card">
+          <h2>Submission Velocity</h2>
+          <p>How request volume changes day by day.</p>
+          <div className="dashboard-chart-shell">
+            {submissionsByDay.length ? (
+              <ResponsiveContainer width="100%" height={260}>
+                <AreaChart data={submissionsByDay} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="velocityGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#f1c85b" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#f1c85b" stopOpacity={0.05} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.16)" />
+                  <XAxis dataKey="label" stroke="#d2c8b0" tickLine={false} axisLine={false} />
+                  <YAxis stroke="#d2c8b0" tickLine={false} axisLine={false} allowDecimals={false} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "rgba(20,18,25,0.95)",
+                      border: "1px solid rgba(255,255,255,0.25)",
+                      borderRadius: "10px",
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="submissions"
+                    stroke="#f1c85b"
+                    strokeWidth={3}
+                    fill="url(#velocityGradient)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="dashboard-empty">No lead submissions yet.</p>
+            )}
+          </div>
+        </article>
+
+        <article className="dashboard-chart-card surface-card">
+          <h2>Traffic Sources</h2>
+          <p>Where your invite requests are coming from.</p>
+          <div className="dashboard-chart-shell">
+            {sourceDistribution.length ? (
+              <ResponsiveContainer width="100%" height={260}>
+                <PieChart>
+                  <Pie
+                    data={sourceDistribution}
+                    dataKey="value"
+                    nameKey="source"
+                    innerRadius={62}
+                    outerRadius={95}
+                    paddingAngle={2}
+                    label={({ source, percent }) => `${source} ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {sourceDistribution.map((entry, index) => (
+                      <Cell
+                        key={entry.source}
+                        fill={SOURCE_COLORS[index % SOURCE_COLORS.length]}
+                        stroke="rgba(0,0,0,0.4)"
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      background: "rgba(20,18,25,0.95)",
+                      border: "1px solid rgba(255,255,255,0.25)",
+                      borderRadius: "10px",
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="dashboard-empty">No source data available.</p>
+            )}
+          </div>
+        </article>
+
+        <article className="dashboard-chart-card surface-card">
+          <h2>Top Companies</h2>
+          <p>Most represented companies in your pipeline.</p>
+          <div className="dashboard-chart-shell">
+            {companyDistribution.length ? (
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={companyDistribution} margin={{ top: 10, right: 12, left: -22, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.16)" />
+                  <XAxis
+                    dataKey="company"
+                    stroke="#d2c8b0"
+                    tickLine={false}
+                    axisLine={false}
+                    interval={0}
+                    angle={-16}
+                    textAnchor="end"
+                    height={62}
+                  />
+                  <YAxis stroke="#d2c8b0" tickLine={false} axisLine={false} allowDecimals={false} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "rgba(20,18,25,0.95)",
+                      border: "1px solid rgba(255,255,255,0.25)",
+                      borderRadius: "10px",
+                    }}
+                  />
+                  <Bar dataKey="leadsCount" radius={[8, 8, 0, 0]} fill="#7dc8ff" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="dashboard-empty">No company data available.</p>
+            )}
+          </div>
+        </article>
+      </section>
+
+      <section className="dashboard-table-card surface-card">
+        <div className="dashboard-table-headline">
+          <h2>All Invite Requests</h2>
+          <p>{loading ? "Loading..." : `${tableRows.length} records`}</p>
+        </div>
+        <div className="ag-theme-quartz-dark dashboard-grid">
+          <AgGridReact
+            rowData={tableRows}
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            animateRows
+            suppressMovableColumns
+            rowSelection={{ mode: "singleRow" }}
+          />
+        </div>
+      </section>
+    </div>
+  );
+}

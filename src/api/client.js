@@ -1,5 +1,5 @@
-import { API_ENDPOINTS, HTTP_METHODS } from "./endpoints";
-import { apiRequest } from "./router";
+import { API_ENDPOINTS, HTTP_METHODS } from "./endpoints.js";
+import { apiRequest } from "./router.js";
 
 export function checkApiHealth() {
   return apiRequest({

@@ -29,3 +29,9 @@ npm run preview
 - `GET /api/leads` -> returns all saved lead requests from local storage.
 - `POST /api/leads` -> validates and saves a lead request to local storage.
 - `GET /api/leads/:id` -> returns a single lead request by id.
+
+## Dashboard
+
+- Open `/dashboard` to view local analytics and lead data.
+- Includes 3 charts (submission velocity, traffic sources, top companies).
+- Includes full AG Grid table with all saved invite requests.

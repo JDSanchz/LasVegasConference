@@ -1,5 +1,5 @@
-import { API_ENDPOINTS, HTTP_METHODS } from "./endpoints";
-import { getLeadById, insertLead, listLeads } from "./local-storage-db";
+import { API_ENDPOINTS, HTTP_METHODS } from "./endpoints.js";
+import { getLeadById, insertLead, listLeads } from "./local-storage-db.js";
 
 const REQUIRED_LEAD_FIELDS = [
   "firstName",

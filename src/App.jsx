@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { createLead } from "./api/client";
 
 const UTM_KEYS = [
@@ -183,43 +183,12 @@ function scrollSpotlightTrack(track, direction, options = {}) {
   });
 }
 
-function ParallaxSection({
-  children,
-  className = "",
-  direction = 1,
-  intensity = 26,
-  style,
-  ...props
-}) {
-  const sectionRef = useRef(null);
-  const shouldReduceMotion = useReducedMotion();
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"],
-  });
-  const y = useTransform(
-    scrollYProgress,
-    [0, 1],
-    shouldReduceMotion ? [0, 0] : [intensity * direction, -intensity * direction],
-  );
-
-  return (
-    <motion.section
-      ref={sectionRef}
-      className={`parallax-section ${className}`.trim()}
-      style={style ? { ...style, y } : { y }}
-      {...props}
-    >
-      {children}
-    </motion.section>
-  );
-}
-
 export default function App() {
   const shouldReduceMotion = useReducedMotion();
   const [formData, setFormData] = useState(initialFormState);
   const [utm, setUtm] = useState({});
   const [status, setStatus] = useState({ type: "idle", message: "" });
+  const [toast, setToast] = useState(null);
   const [credibilityAnimated, setCredibilityAnimated] = useState(false);
   const [statValues, setStatValues] = useState({
     attendees: 0,
@@ -328,6 +297,20 @@ export default function App() {
     track.scrollTo({ left: 0, behavior: "auto" });
   }, [isMobileSpotlight]);
 
+  useEffect(() => {
+    if (!toast) {
+      return;
+    }
+
+    const timerId = window.setTimeout(() => {
+      setToast(null);
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [toast]);
+
   function handleChange(event) {
     const { name, value } = event.target;
     setFormData((current) => ({
@@ -372,6 +355,10 @@ export default function App() {
 
     setFormData(initialFormState);
     setStatus({
+      type: "idle",
+      message: "",
+    });
+    setToast({
       type: "success",
       message: "You are on the priority list. We will contact you shortly.",
     });
@@ -409,6 +396,16 @@ export default function App() {
 
   return (
     <div className="page-shell">
+      {toast ? (
+        <div className="toast-stack" aria-live="polite" aria-atomic="true">
+          <div
+            className={`toast toast-${toast.type}${shouldReduceMotion ? " toast-reduced-motion" : ""}`}
+            role="status"
+          >
+            {toast.message}
+          </div>
+        </div>
+      ) : null}
       <header className="hero" id="top">
         <motion.div
           className="hero-grid"
@@ -440,6 +437,9 @@ export default function App() {
               >
                 View Agenda Highlights
               </a>
+              <a className="btn btn-ghost" href="/dashboard">
+                View Lead Dashboard
+              </a>
             </div>
             <p className="campaign-pill">
               Traffic source detected: <strong>{campaignSource}</strong>
@@ -449,11 +449,9 @@ export default function App() {
       </header>
 
       <main>
-        <ParallaxSection
+        <motion.section
           className="section"
           id="value"
-          direction={1}
-          intensity={28}
           variants={stagger}
           initial="hidden"
           whileInView="show"
@@ -472,13 +470,11 @@ export default function App() {
               </motion.article>
             ))}
           </motion.div>
-        </ParallaxSection>
+        </motion.section>
 
-        <ParallaxSection
+        <motion.section
           className="section spotlight-section"
           id="executive-spotlight"
-          direction={-1}
-          intensity={22}
           variants={stagger}
           initial="hidden"
           whileInView="show"
@@ -540,13 +536,11 @@ export default function App() {
               ))}
             </motion.div>
           </div>
-        </ParallaxSection>
+        </motion.section>
 
-        <ParallaxSection
+        <motion.section
           className="section keynote-section"
           id="keynotes"
-          direction={1}
-          intensity={24}
           variants={stagger}
           initial="hidden"
           whileInView="show"
@@ -581,12 +575,10 @@ export default function App() {
               </motion.article>
             ))}
           </motion.div>
-        </ParallaxSection>
+        </motion.section>
 
-        <ParallaxSection
+        <motion.section
           className="section credibility"
-          direction={-1}
-          intensity={20}
           variants={stagger}
           initial="hidden"
           whileInView="show"
@@ -624,13 +616,11 @@ export default function App() {
               <p className="stat-label">{credibilityClosingStat.label}</p>
             </motion.div>
           </motion.div>
-        </ParallaxSection>
+        </motion.section>
 
-        <ParallaxSection
+        <motion.section
           className="section form-section surface-card"
           id="lead-form"
-          direction={1}
-          intensity={16}
           variants={stagger}
           initial="hidden"
           whileInView="show"
@@ -733,7 +723,7 @@ export default function App() {
               </p>
             ) : null}
           </motion.form>
-        </ParallaxSection>
+        </motion.section>
 
       </main>
     </div>

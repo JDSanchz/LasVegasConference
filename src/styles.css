@@ -217,10 +217,6 @@ select:focus-visible {
   padding: 1.35rem 0;
 }
 
-.parallax-section {
-  will-change: transform;
-}
-
 .section h2 {
   margin-bottom: 0.45rem;
   font-size: clamp(1.5rem, 4vw, 2.15rem);
@@ -509,6 +505,241 @@ select:focus-visible {
   border: 1px solid rgba(255, 176, 96, 0.62);
 }
 
+.toast-stack {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1200;
+  pointer-events: none;
+}
+
+.toast {
+  min-width: min(400px, calc(100vw - 2rem));
+  max-width: min(430px, calc(100vw - 2rem));
+  color: #f7fdf9;
+  background:
+    linear-gradient(140deg, rgba(24, 84, 58, 0.95) 0%, rgba(16, 64, 44, 0.9) 100%),
+    linear-gradient(120deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 60%);
+  border: 1px solid rgba(123, 237, 190, 0.7);
+  border-radius: 12px;
+  box-shadow:
+    0 12px 26px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(167, 243, 208, 0.25) inset;
+  padding: 0.82rem 0.95rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow: hidden;
+  animation:
+    toast-enter 380ms cubic-bezier(0.24, 0.9, 0.3, 1) forwards,
+    toast-exit 540ms cubic-bezier(0.3, 0, 0.72, 0.26) 2460ms forwards;
+}
+
+.toast-reduced-motion {
+  animation: none;
+}
+
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -14px, 0) scale(0.94);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes toast-exit {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, -9px, 0) scale(0.97);
+  }
+}
+
+.dashboard-page {
+  padding-top: 1.3rem;
+}
+
+.dashboard-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: clamp(1.25rem, 2vw, 1.75rem);
+}
+
+.dashboard-header h1 {
+  max-width: unset;
+}
+
+.dashboard-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
+.dashboard-kpi-grid {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.dashboard-kpi {
+  padding: 1rem;
+}
+
+.dashboard-kpi p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.dashboard-kpi strong {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  color: var(--primary-strong);
+}
+
+.dashboard-chart-grid {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.dashboard-chart-card {
+  padding: 1rem;
+}
+
+.dashboard-chart-card h2 {
+  margin-bottom: 0.25rem;
+  font-size: 1.2rem;
+}
+
+.dashboard-chart-card p {
+  margin-top: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.dashboard-chart-shell {
+  margin-top: 0.55rem;
+  min-height: 260px;
+}
+
+.dashboard-empty {
+  margin: 0.7rem 0 0;
+  color: var(--muted);
+}
+
+.dashboard-table-card {
+  margin-top: 1rem;
+  padding: 1rem;
+}
+
+.dashboard-table-headline {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-bottom: 0.7rem;
+}
+
+.dashboard-table-headline p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.dashboard-grid {
+  height: 560px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dashboard-grid.ag-theme-quartz-dark {
+  --ag-font-family: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
+  --ag-background-color: #111318;
+  --ag-header-background-color: #1a1d24;
+  --ag-header-foreground-color: #f3f4f6;
+  --ag-foreground-color: #d1d5db;
+  --ag-border-color: #2a2f3a;
+  --ag-row-hover-color: #1e2430;
+  --ag-selected-row-background-color: #253043;
+  --ag-odd-row-background-color: #151922;
+  --ag-accent-color: #60a5fa;
+  --ag-header-column-resize-handle-color: #60a5fa;
+  --ag-wrapper-border-radius: 12px;
+  --ag-border-radius: 12px;
+  --ag-header-height: 46px;
+  --ag-row-height: 44px;
+}
+
+.dashboard-grid .ag-paging-panel {
+  border-top: 1px solid #2a2f3a;
+  background: #101318;
+  padding: 10px 12px;
+  min-height: 52px;
+  gap: 12px;
+  font-size: 0.87rem;
+  color: #cbd5e1;
+}
+
+.dashboard-grid .ag-paging-button {
+  border: 1px solid #374151;
+  background: #161b24;
+  color: #e5e7eb;
+  border-radius: 8px;
+  min-width: 30px;
+  min-height: 30px;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.dashboard-grid .ag-paging-button:hover:not([disabled]) {
+  background: #1f2633;
+  border-color: #60a5fa;
+}
+
+.dashboard-grid .ag-paging-button:active:not([disabled]) {
+  transform: translateY(1px);
+}
+
+.dashboard-grid .ag-paging-button[disabled] {
+  opacity: 0.45;
+  border-color: #2b3340;
+}
+
+.dashboard-grid .ag-paging-description,
+.dashboard-grid .ag-paging-page-summary-panel,
+.dashboard-grid .ag-paging-row-summary-panel,
+.dashboard-grid .ag-label {
+  color: #cbd5e1;
+}
+
+.dashboard-grid .ag-picker-field-wrapper {
+  border-color: #3a4150;
+  background: #0f1218;
+  border-radius: 8px;
+}
+
+.dashboard-grid .ag-input-field-input {
+  border-color: #3a4150;
+  background: #0f1218;
+  color: #e5e7eb;
+}
+
 @media (min-width: 700px) {
   .hero {
     padding-top: 1.8rem;
@@ -546,6 +777,12 @@ select:focus-visible {
   }
 }
 
+@media (max-width: 1023px) {
+  .dashboard-chart-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (min-width: 1024px) {
   .spotlight-controls {
     display: none;
@@ -556,7 +793,42 @@ select:focus-visible {
   }
 }
 
+@media (max-width: 799px) {
+  .toast-stack {
+    left: 1rem;
+    right: 1rem;
+  }
+
+  .toast {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .dashboard-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dashboard-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .dashboard-kpi-grid,
+  .dashboard-chart-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-grid {
+    height: 520px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+
   .spotlight-edge-cue,
   .spotlight-image-arrow {
     animation: none;
