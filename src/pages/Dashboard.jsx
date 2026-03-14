@@ -22,12 +22,96 @@ import {
   colorSchemeDarkBlue,
   themeQuartz,
 } from "ag-grid-community";
-import { listLeadRequests } from "../api/client";
+import { createLead, listLeadRequests } from "../api/client";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 const dashboardGridTheme = themeQuartz.withPart(colorSchemeDarkBlue);
 
+const GENERATED_LEAD_COUNT = 20;
 const SOURCE_COLORS = ["#f1c85b", "#7dc8ff", "#8df4cb", "#ff9e7d", "#d6a9ff", "#ffe48f"];
+const FIRST_NAMES = [
+  "Alex",
+  "Jordan",
+  "Taylor",
+  "Morgan",
+  "Casey",
+  "Avery",
+  "Riley",
+  "Cameron",
+  "Parker",
+  "Drew",
+];
+const LAST_NAMES = [
+  "Johnson",
+  "Martinez",
+  "Brown",
+  "Davis",
+  "Wilson",
+  "Taylor",
+  "Anderson",
+  "Thomas",
+  "Moore",
+  "Jackson",
+];
+const JOB_TITLES = ["CEO", "COO", "VP Sales", "Head of Growth", "Founder", "Director of Marketing"];
+const COMPANIES = [
+  "Tesla",
+  "Ford",
+  "Dell Technologies",
+  "Microsoft",
+  "Google",
+  "Amazon",
+  "Apple",
+  "NVIDIA",
+  "Salesforce",
+  "Oracle",
+];
+const UTM_SOURCES = ["linkedin", "google", "newsletter", "x", "youtube", "partner"];
+const UTM_MEDIUMS = ["paid_social", "cpc", "email", "organic_social", "video", "referral"];
+const UTM_CAMPAIGNS = [
+  "executive-roundtable-2026",
+  "spring-growth-summit",
+  "pipeline-acceleration",
+  "ai-leadership-series",
+  "partner-invite-program",
+  "vip-networking-drive",
+];
+
+function pickRandom(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function buildRandomLeadPayload() {
+  const firstName = pickRandom(FIRST_NAMES);
+  const lastName = pickRandom(LAST_NAMES);
+  const company = pickRandom(COMPANIES);
+  const handleSuffix = randomInt(1000, 9999);
+  const now = Date.now();
+  const randomOffsetMinutes = randomInt(0, 14 * 24 * 60);
+  const submittedAt = new Date(now - randomOffsetMinutes * 60 * 1000).toISOString();
+
+  return {
+    firstName,
+    lastName,
+    email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${handleSuffix}@example.com`,
+    jobTitle: pickRandom(JOB_TITLES),
+    socialHandle: `@${firstName.toLowerCase()}${lastName.toLowerCase()}${handleSuffix}`,
+    company,
+    utm: {
+      utm_source: pickRandom(UTM_SOURCES),
+      utm_medium: pickRandom(UTM_MEDIUMS),
+      utm_campaign: pickRandom(UTM_CAMPAIGNS),
+      utm_content: `entry-${handleSuffix}`,
+    },
+    submittedAt,
+    landingPath: "/",
+    landingHost: window.location.host,
+  };
+}
 
 function formatDate(value) {
   if (!value) {
@@ -84,6 +168,10 @@ export default function Dashboard() {
     setLoading(true);
     setError("");
 
+    const payloads = Array.from({ length: GENERATED_LEAD_COUNT }, () => buildRandomLeadPayload());
+    const creationResults = await Promise.all(payloads.map((payload) => createLead(payload)));
+    const failedCreates = creationResults.filter((result) => !result.ok).length;
+
     const response = await listLeadRequests();
     if (!response.ok) {
       setLeads([]);
@@ -93,6 +181,9 @@ export default function Dashboard() {
     }
 
     setLeads(Array.isArray(response.data?.leads) ? response.data.leads : []);
+    if (failedCreates > 0) {
+      setError(`${failedCreates} generated entries could not be saved.`);
+    }
     setLoading(false);
   }
 
