@@ -790,6 +790,105 @@ select:focus-visible {
   color: var(--primary-strong);
 }
 
+.dashboard-tools-grid {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: 1fr;
+}
+
+.dashboard-link-generator {
+  padding: 1rem;
+}
+
+.dashboard-link-generator h2 {
+  margin-bottom: 0.25rem;
+  font-size: 1.2rem;
+}
+
+.dashboard-link-generator p {
+  margin-top: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.dashboard-link-generator-form {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.72rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.dashboard-link-field {
+  display: grid;
+  gap: 0.42rem;
+}
+
+.dashboard-link-field-wide {
+  grid-column: 1 / -1;
+}
+
+.dashboard-link-field label,
+.dashboard-link-output label {
+  color: #ebdfc3;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.dashboard-link-field input,
+.dashboard-link-field select,
+.dashboard-link-output input {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(10, 10, 14, 0.5);
+  color: var(--text);
+  padding: 0.66rem 0.78rem;
+  font: inherit;
+  backdrop-filter: blur(8px) saturate(130%);
+  -webkit-backdrop-filter: blur(8px) saturate(130%);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-link-field input:hover,
+.dashboard-link-field select:hover,
+.dashboard-link-output input:hover {
+  border-color: rgba(255, 255, 255, 0.48);
+}
+
+.dashboard-link-field input:focus-visible,
+.dashboard-link-field select:focus-visible,
+.dashboard-link-output input:focus-visible {
+  border-color: var(--primary);
+}
+
+.dashboard-link-field select option {
+  color: var(--text);
+  background: #100f13;
+}
+
+.dashboard-link-output {
+  margin-top: 0.92rem;
+  display: grid;
+  gap: 0.62rem;
+}
+
+.dashboard-link-output input[readonly] {
+  border-color: rgba(241, 200, 91, 0.36);
+}
+
+.dashboard-link-output .status-message {
+  margin: 0;
+}
+
+.dashboard-link-actions {
+  margin-top: 0.18rem;
+  display: flex;
+  gap: 0.62rem;
+  flex-wrap: wrap;
+}
+
 .dashboard-chart-grid {
   margin-top: 1rem;
   display: grid;
@@ -950,6 +1049,14 @@ select:focus-visible {
   .dashboard-kpi-grid,
   .dashboard-chart-grid {
     grid-template-columns: 1fr;
+  }
+
+  .dashboard-link-generator-form {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-link-actions .btn {
+    width: 100%;
   }
 
   .dashboard-grid {

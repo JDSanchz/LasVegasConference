@@ -79,6 +79,21 @@ const UTM_CAMPAIGNS = [
   "partner-invite-program",
   "vip-networking-drive",
 ];
+const DEFAULT_CAMPAIGN_LINK_VALUES = {
+  source: "newsletter",
+  medium: "email",
+  campaign: "executive-roundtable-2026",
+  term: "",
+  content: "",
+};
+
+function getDefaultCampaignBaseUrl() {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  return `${window.location.origin}/`;
+}
 
 function pickRandom(items) {
   return items[Math.floor(Math.random() * items.length)];
@@ -170,6 +185,11 @@ export default function Dashboard() {
   const [passwordInput, setPasswordInput] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [campaignLinkForm, setCampaignLinkForm] = useState({
+    baseUrl: "",
+    ...DEFAULT_CAMPAIGN_LINK_VALUES,
+  });
+  const [campaignLinkStatus, setCampaignLinkStatus] = useState({ type: "idle", message: "" });
 
   const clearDashboardAccess = useCallback(() => {
     try {
@@ -207,6 +227,19 @@ export default function Dashboard() {
     setDashboardUnlocked(hasValidDashboardAccess());
     setLoading(false);
   }, [hasValidDashboardAccess]);
+
+  useEffect(() => {
+    setCampaignLinkForm((current) => {
+      if (current.baseUrl) {
+        return current;
+      }
+
+      return {
+        ...current,
+        baseUrl: getDefaultCampaignBaseUrl(),
+      };
+    });
+  }, []);
 
   useEffect(() => {
     if (!dashboardUnlocked) {
@@ -287,6 +320,96 @@ export default function Dashboard() {
     }
     setDashboardUnlocked(true);
     setPasswordInput("");
+  }
+
+  function handleCampaignLinkFieldChange(event) {
+    const { name, value } = event.target;
+    setCampaignLinkForm((current) => ({
+      ...current,
+      [name]: value,
+    }));
+    if (campaignLinkStatus.type !== "idle") {
+      setCampaignLinkStatus({ type: "idle", message: "" });
+    }
+  }
+
+  function resetCampaignLinkForm() {
+    setCampaignLinkForm({
+      baseUrl: getDefaultCampaignBaseUrl(),
+      ...DEFAULT_CAMPAIGN_LINK_VALUES,
+    });
+    setCampaignLinkStatus({ type: "idle", message: "" });
+  }
+
+  const campaignLinkBaseUrlError = useMemo(() => {
+    const baseUrl = campaignLinkForm.baseUrl.trim();
+    if (!baseUrl) {
+      return "Enter a landing page URL to generate a campaign link.";
+    }
+
+    try {
+      new URL(baseUrl);
+      return "";
+    } catch {
+      return "Landing page URL must include protocol, for example: https://yourdomain.com.";
+    }
+  }, [campaignLinkForm.baseUrl]);
+
+  const generatedCampaignLink = useMemo(() => {
+    if (campaignLinkBaseUrlError) {
+      return "";
+    }
+
+    const url = new URL(campaignLinkForm.baseUrl.trim());
+    const params = [
+      ["utm_source", campaignLinkForm.source],
+      ["utm_medium", campaignLinkForm.medium],
+      ["utm_campaign", campaignLinkForm.campaign],
+      ["utm_term", campaignLinkForm.term],
+      ["utm_content", campaignLinkForm.content],
+    ];
+
+    params.forEach(([key, value]) => {
+      const normalizedValue = value.trim();
+      if (normalizedValue) {
+        url.searchParams.set(key, normalizedValue);
+      } else {
+        url.searchParams.delete(key);
+      }
+    });
+
+    return url.toString();
+  }, [campaignLinkBaseUrlError, campaignLinkForm]);
+
+  async function copyGeneratedCampaignLink() {
+    if (!generatedCampaignLink) {
+      setCampaignLinkStatus({
+        type: "warning",
+        message: campaignLinkBaseUrlError || "Enter source, medium, and campaign values first.",
+      });
+      return;
+    }
+
+    if (!navigator?.clipboard?.writeText) {
+      setCampaignLinkStatus({
+        type: "warning",
+        message: "Clipboard access is unavailable. Copy the generated URL manually.",
+      });
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(generatedCampaignLink);
+      setCampaignLinkStatus({
+        type: "success",
+        message: "Campaign link copied to clipboard.",
+      });
+    } catch {
+      setCampaignLinkStatus({
+        type: "warning",
+        message: "Unable to copy automatically. Copy the generated URL manually.",
+      });
+    }
   }
 
   const leadsSorted = useMemo(() => {
@@ -484,6 +607,137 @@ export default function Dashboard() {
       {error ? (
         <p className="status-message status-warning">{error}</p>
       ) : null}
+
+      <section className="dashboard-tools-grid">
+        <article className="dashboard-link-generator surface-card">
+          <h2>Marketing Campaign Link Generator</h2>
+          <p>Build tracked links by adjusting source, medium, and campaign.</p>
+
+          <div className="dashboard-link-generator-form">
+            <div className="dashboard-link-field dashboard-link-field-wide">
+              <label htmlFor="campaign-base-url">Landing Page URL</label>
+              <input
+                id="campaign-base-url"
+                name="baseUrl"
+                type="url"
+                value={campaignLinkForm.baseUrl}
+                onChange={handleCampaignLinkFieldChange}
+                placeholder="https://yourdomain.com"
+              />
+            </div>
+
+            <div className="dashboard-link-field">
+              <label htmlFor="campaign-source">UTM Source</label>
+              <input
+                id="campaign-source"
+                name="source"
+                type="text"
+                value={campaignLinkForm.source}
+                onChange={handleCampaignLinkFieldChange}
+                list="utm-source-options"
+                placeholder="newsletter"
+              />
+            </div>
+
+            <div className="dashboard-link-field">
+              <label htmlFor="campaign-medium">UTM Medium</label>
+              <select
+                id="campaign-medium"
+                name="medium"
+                value={campaignLinkForm.medium}
+                onChange={handleCampaignLinkFieldChange}
+              >
+                {UTM_MEDIUMS.map((medium) => (
+                  <option key={medium} value={medium}>
+                    {medium}
+                  </option>
+                ))}
+                <option value="sms">sms</option>
+                <option value="direct_mail">direct_mail</option>
+              </select>
+            </div>
+
+            <div className="dashboard-link-field">
+              <label htmlFor="campaign-name">UTM Campaign</label>
+              <input
+                id="campaign-name"
+                name="campaign"
+                type="text"
+                value={campaignLinkForm.campaign}
+                onChange={handleCampaignLinkFieldChange}
+                list="utm-campaign-options"
+                placeholder="spring-growth-summit"
+              />
+            </div>
+
+            <div className="dashboard-link-field">
+              <label htmlFor="campaign-term">UTM Term (Optional)</label>
+              <input
+                id="campaign-term"
+                name="term"
+                type="text"
+                value={campaignLinkForm.term}
+                onChange={handleCampaignLinkFieldChange}
+                placeholder="executive-list-a"
+              />
+            </div>
+
+            <div className="dashboard-link-field">
+              <label htmlFor="campaign-content">UTM Content (Optional)</label>
+              <input
+                id="campaign-content"
+                name="content"
+                type="text"
+                value={campaignLinkForm.content}
+                onChange={handleCampaignLinkFieldChange}
+                placeholder="cta-button-v1"
+              />
+            </div>
+
+            <datalist id="utm-source-options">
+              {UTM_SOURCES.map((source) => (
+                <option key={source} value={source} />
+              ))}
+              <option value="email" />
+              <option value="sms" />
+              <option value="direct_mail" />
+            </datalist>
+
+            <datalist id="utm-campaign-options">
+              {UTM_CAMPAIGNS.map((campaign) => (
+                <option key={campaign} value={campaign} />
+              ))}
+            </datalist>
+          </div>
+
+          <div className="dashboard-link-output">
+            <label htmlFor="generated-campaign-link">Generated Campaign URL</label>
+            <input
+              id="generated-campaign-link"
+              type="text"
+              value={generatedCampaignLink}
+              readOnly
+              placeholder="Your tracked URL will appear here."
+            />
+            {campaignLinkBaseUrlError ? (
+              <p className="status-message status-warning">{campaignLinkBaseUrlError}</p>
+            ) : null}
+            {campaignLinkStatus.type !== "idle" ? (
+              <p className={`status-message status-${campaignLinkStatus.type}`}>
+                {campaignLinkStatus.message}
+              </p>
+            ) : null}
+            <div className="dashboard-link-actions">
+              <button type="button" className="btn btn-primary" onClick={copyGeneratedCampaignLink}>
+                Copy Link
+              </button>
+              <button type="button" className="btn btn-ghost" onClick={resetCampaignLinkForm}>
+                Reset
+              </button>
+            </div>
+          </div>
+        </article>
+      </section>
 
       <section className="dashboard-chart-grid">
         <article className="dashboard-chart-card surface-card">
