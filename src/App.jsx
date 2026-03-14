@@ -193,19 +193,21 @@ function scrollSpotlightTrack(track, direction, options = {}) {
   });
 }
 
-const SPOTLIGHT_VIDEO_LOOP_COUNT = 2;
-
 function SpotlightMedia({ executive, shouldPlayVideo }) {
-  const [loopCount, setLoopCount] = useState(0);
-  const [showImage, setShowImage] = useState(!shouldPlayVideo);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [showImage, setShowImage] = useState(true);
   const videoRef = useRef(null);
+  const canPlayVideo = Boolean(isHydrated && shouldPlayVideo && executive.video);
 
   useEffect(() => {
-    setLoopCount(0);
-    setShowImage(!shouldPlayVideo);
-  }, [shouldPlayVideo, executive.video]);
+    setIsHydrated(true);
+  }, []);
 
-  if (!shouldPlayVideo || !executive.video) {
+  useEffect(() => {
+    setShowImage(!canPlayVideo);
+  }, [canPlayVideo]);
+
+  if (!canPlayVideo) {
     return (
       <img
         className="spotlight-photo"
@@ -218,24 +220,6 @@ function SpotlightMedia({ executive, shouldPlayVideo }) {
   }
 
   function handleVideoEnded() {
-    const nextLoopCount = loopCount + 1;
-
-    if (nextLoopCount < SPOTLIGHT_VIDEO_LOOP_COUNT) {
-      const videoElement = videoRef.current;
-      if (!videoElement) {
-        setShowImage(true);
-        return;
-      }
-
-      setLoopCount(nextLoopCount);
-      videoElement.currentTime = 0;
-      videoElement.play().catch(() => {
-        setShowImage(true);
-      });
-      return;
-    }
-
-    setLoopCount(nextLoopCount);
     setShowImage(true);
   }
 
@@ -278,13 +262,25 @@ export default function App() {
   });
   const [isMobileSpotlight, setIsMobileSpotlight] = useState(false);
   const spotlightTrackRef = useRef(null);
-  const spotlightItemCount = spotlightExecutives.length;
+  const spotlightBaseExecutives = useMemo(() => {
+    if (!isMobileSpotlight) {
+      return spotlightExecutives;
+    }
+
+    const elias = spotlightExecutives.find((executive) => executive.name === "Elias Ayub");
+    if (!elias) {
+      return spotlightExecutives;
+    }
+
+    return [elias, ...spotlightExecutives.filter((executive) => executive.name !== "Elias Ayub")];
+  }, [isMobileSpotlight]);
+  const spotlightItemCount = spotlightBaseExecutives.length;
   const spotlightCarouselItems = useMemo(
     () =>
       isMobileSpotlight
-        ? [...spotlightExecutives, ...spotlightExecutives]
-        : spotlightExecutives,
-    [isMobileSpotlight],
+        ? [...spotlightBaseExecutives, ...spotlightBaseExecutives]
+        : spotlightBaseExecutives,
+    [isMobileSpotlight, spotlightBaseExecutives],
   );
 
   useEffect(() => {

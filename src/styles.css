@@ -396,20 +396,29 @@ select:focus-visible {
 }
 
 .spotlight-video {
-  transition: opacity 420ms ease;
+  transition: opacity 650ms ease, transform 760ms cubic-bezier(0.22, 1, 0.36, 1), filter 760ms ease;
 }
 
 .spotlight-photo-overlay {
   opacity: 0;
-  transition: opacity 420ms ease;
+  transform: scale(1.08);
+  filter: blur(8px) saturate(1.25);
+  transition:
+    opacity 680ms ease,
+    transform 860ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 860ms ease;
 }
 
 .spotlight-media-hidden {
   opacity: 0;
+  transform: scale(0.96);
+  filter: blur(6px) brightness(0.72);
 }
 
 .spotlight-media-visible {
   opacity: 1;
+  transform: scale(1);
+  filter: blur(0) saturate(1);
 }
 
 .spotlight-card-content {
