@@ -7,6 +7,7 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  Legend,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -15,12 +16,16 @@ import {
   YAxis,
 } from "recharts";
 import { AgGridReact } from "ag-grid-react";
-import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
+import {
+  AllCommunityModule,
+  ModuleRegistry,
+  colorSchemeDarkBlue,
+  themeQuartz,
+} from "ag-grid-community";
 import { listLeadRequests } from "../api/client";
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-quartz.css";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
+const dashboardGridTheme = themeQuartz.withPart(colorSchemeDarkBlue);
 
 const SOURCE_COLORS = ["#f1c85b", "#7dc8ff", "#8df4cb", "#ff9e7d", "#d6a9ff", "#ffe48f"];
 
@@ -55,6 +60,19 @@ function formatDateTime(value) {
   }
 
   return date.toLocaleString();
+}
+
+function formatCompanyTick(value) {
+  if (!value) {
+    return "";
+  }
+
+  const normalized = String(value);
+  if (normalized.length <= 12) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, 12)}...`;
 }
 
 export default function Dashboard() {
@@ -136,7 +154,7 @@ export default function Dashboard() {
 
     return [...buckets.entries()]
       .sort((left, right) => right[1] - left[1])
-      .slice(0, 8)
+      .slice(0, 3)
       .map(([company, leadsCount]) => ({ company, leadsCount }));
   }, [leadsSorted]);
 
@@ -275,16 +293,19 @@ export default function Dashboard() {
           <p>Where your invite requests are coming from.</p>
           <div className="dashboard-chart-shell">
             {sourceDistribution.length ? (
-              <ResponsiveContainer width="100%" height={260}>
+              <ResponsiveContainer width="100%" height={290}>
                 <PieChart>
                   <Pie
                     data={sourceDistribution}
                     dataKey="value"
                     nameKey="source"
-                    innerRadius={62}
-                    outerRadius={95}
-                    paddingAngle={2}
-                    label={({ source, percent }) => `${source} ${(percent * 100).toFixed(0)}%`}
+                    cx="50%"
+                    cy="44%"
+                    innerRadius={56}
+                    outerRadius={82}
+                    paddingAngle={3}
+                    label={false}
+                    labelLine={false}
                   >
                     {sourceDistribution.map((entry, index) => (
                       <Cell
@@ -300,6 +321,12 @@ export default function Dashboard() {
                       border: "1px solid rgba(255,255,255,0.25)",
                       borderRadius: "10px",
                     }}
+                  />
+                  <Legend
+                    verticalAlign="bottom"
+                    align="center"
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: "12px", color: "#d2c8b0" }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -322,10 +349,10 @@ export default function Dashboard() {
                     stroke="#d2c8b0"
                     tickLine={false}
                     axisLine={false}
-                    interval={0}
-                    angle={-16}
-                    textAnchor="end"
-                    height={62}
+                    interval="preserveStartEnd"
+                    tickMargin={8}
+                    tickFormatter={formatCompanyTick}
+                    height={44}
                   />
                   <YAxis stroke="#d2c8b0" tickLine={false} axisLine={false} allowDecimals={false} />
                   <Tooltip
@@ -350,8 +377,9 @@ export default function Dashboard() {
           <h2>All Invite Requests</h2>
           <p>{loading ? "Loading..." : `${tableRows.length} records`}</p>
         </div>
-        <div className="ag-theme-quartz-dark dashboard-grid">
+        <div className="dashboard-grid">
           <AgGridReact
+            theme={dashboardGridTheme}
             rowData={tableRows}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}

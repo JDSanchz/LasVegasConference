@@ -7,6 +7,30 @@ import { createLead, listLeadRequests } from "../src/api/client.js";
 
 const DEFAULT_COUNT = 150;
 const DEFAULT_STORAGE_FILE = path.resolve(process.cwd(), "local-data/localStorage.json");
+const COMPANY_NAMES = [
+  "Tesla",
+  "Ford",
+  "Dell Technologies",
+  "Microsoft",
+  "Google",
+  "Amazon",
+  "Apple",
+  "NVIDIA",
+  "Salesforce",
+  "Oracle",
+  "Cisco",
+  "Adobe",
+];
+const UTM_SOURCES = ["linkedin", "google", "newsletter", "x", "youtube", "partner"];
+const UTM_MEDIUMS = ["paid_social", "cpc", "email", "organic_social", "video", "referral"];
+const UTM_CAMPAIGNS = [
+  "executive-roundtable-2026",
+  "spring-growth-summit",
+  "pipeline-acceleration",
+  "ai-leadership-series",
+  "partner-invite-program",
+  "vip-networking-drive",
+];
 
 function parseArgs(argv) {
   const options = {
@@ -89,7 +113,7 @@ function ensureCryptoRandomUuid() {
 function buildLead(index) {
   const number = index + 1;
   const roles = ["CEO", "COO", "VP Sales", "Head of Growth", "Founder"];
-  const sources = ["linkedin", "email", "search", "referral", "podcast"];
+  const company = COMPANY_NAMES[index % COMPANY_NAMES.length];
 
   return {
     firstName: `Test${number}`,
@@ -97,11 +121,11 @@ function buildLead(index) {
     email: `test.lead${number}@example.com`,
     jobTitle: roles[index % roles.length],
     socialHandle: `@testlead${number}`,
-    company: `Company ${Math.ceil(number / 3)}`,
+    company,
     utm: {
-      utm_source: sources[index % sources.length],
-      utm_medium: "automation-script",
-      utm_campaign: "bulk-seed",
+      utm_source: UTM_SOURCES[index % UTM_SOURCES.length],
+      utm_medium: UTM_MEDIUMS[index % UTM_MEDIUMS.length],
+      utm_campaign: UTM_CAMPAIGNS[index % UTM_CAMPAIGNS.length],
       utm_content: `entry-${number}`,
     },
     submittedAt: new Date().toISOString(),

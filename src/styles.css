@@ -621,6 +621,7 @@ select:focus-visible {
 
 .dashboard-chart-card {
   padding: 1rem;
+  overflow: hidden;
 }
 
 .dashboard-chart-card h2 {
@@ -664,80 +665,7 @@ select:focus-visible {
 
 .dashboard-grid {
   height: 560px;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.dashboard-grid.ag-theme-quartz-dark {
-  --ag-font-family: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
-  --ag-background-color: #111318;
-  --ag-header-background-color: #1a1d24;
-  --ag-header-foreground-color: #f3f4f6;
-  --ag-foreground-color: #d1d5db;
-  --ag-border-color: #2a2f3a;
-  --ag-row-hover-color: #1e2430;
-  --ag-selected-row-background-color: #253043;
-  --ag-odd-row-background-color: #151922;
-  --ag-accent-color: #60a5fa;
-  --ag-header-column-resize-handle-color: #60a5fa;
-  --ag-wrapper-border-radius: 12px;
-  --ag-border-radius: 12px;
-  --ag-header-height: 46px;
-  --ag-row-height: 44px;
-}
-
-.dashboard-grid .ag-paging-panel {
-  border-top: 1px solid #2a2f3a;
-  background: #101318;
-  padding: 10px 12px;
-  min-height: 52px;
-  gap: 12px;
-  font-size: 0.87rem;
-  color: #cbd5e1;
-}
-
-.dashboard-grid .ag-paging-button {
-  border: 1px solid #374151;
-  background: #161b24;
-  color: #e5e7eb;
-  border-radius: 8px;
-  min-width: 30px;
-  min-height: 30px;
-  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
-}
-
-.dashboard-grid .ag-paging-button:hover:not([disabled]) {
-  background: #1f2633;
-  border-color: #60a5fa;
-}
-
-.dashboard-grid .ag-paging-button:active:not([disabled]) {
-  transform: translateY(1px);
-}
-
-.dashboard-grid .ag-paging-button[disabled] {
-  opacity: 0.45;
-  border-color: #2b3340;
-}
-
-.dashboard-grid .ag-paging-description,
-.dashboard-grid .ag-paging-page-summary-panel,
-.dashboard-grid .ag-paging-row-summary-panel,
-.dashboard-grid .ag-label {
-  color: #cbd5e1;
-}
-
-.dashboard-grid .ag-picker-field-wrapper {
-  border-color: #3a4150;
-  background: #0f1218;
-  border-radius: 8px;
-}
-
-.dashboard-grid .ag-input-field-input {
-  border-color: #3a4150;
-  background: #0f1218;
-  color: #e5e7eb;
+  width: 100%;
 }
 
 @media (min-width: 700px) {

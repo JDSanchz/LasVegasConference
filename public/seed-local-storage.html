@@ -37,6 +37,30 @@
 
     <script type="module">
       const storageKey = "lv_conf_leads";
+      const companyNames = [
+        "Tesla",
+        "Ford",
+        "Dell Technologies",
+        "Microsoft",
+        "Google",
+        "Amazon",
+        "Apple",
+        "NVIDIA",
+        "Salesforce",
+        "Oracle",
+        "Cisco",
+        "Adobe",
+      ];
+      const utmSources = ["linkedin", "google", "newsletter", "x", "youtube", "partner"];
+      const utmMediums = ["paid_social", "cpc", "email", "organic_social", "video", "referral"];
+      const utmCampaigns = [
+        "executive-roundtable-2026",
+        "spring-growth-summit",
+        "pipeline-acceleration",
+        "ai-leadership-series",
+        "partner-invite-program",
+        "vip-networking-drive",
+      ];
       const params = new URLSearchParams(window.location.search);
       const requestedCount = Number.parseInt(params.get("count") || "150", 10);
       const count = Number.isInteger(requestedCount) && requestedCount > 0 ? requestedCount : 150;
@@ -64,8 +88,8 @@
       function createLead(index) {
         const number = index + 1;
         const roles = ["CEO", "COO", "VP Sales", "Head of Growth", "Founder"];
-        const sources = ["linkedin", "email", "search", "referral", "podcast"];
         const now = new Date().toISOString();
+        const company = companyNames[index % companyNames.length];
 
         return {
           id: createId(),
@@ -74,11 +98,11 @@
           email: `browser.lead${number}@example.com`,
           jobTitle: roles[index % roles.length],
           socialHandle: `@browserlead${number}`,
-          company: `Company ${Math.ceil(number / 3)}`,
+          company,
           utm: {
-            utm_source: sources[index % sources.length],
-            utm_medium: "browser-seed",
-            utm_campaign: "bulk-seed",
+            utm_source: utmSources[index % utmSources.length],
+            utm_medium: utmMediums[index % utmMediums.length],
+            utm_campaign: utmCampaigns[index % utmCampaigns.length],
             utm_content: `entry-${number}`,
           },
           submittedAt: now,
