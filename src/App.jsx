@@ -82,9 +82,18 @@ const valueCards = [
   },
 ];
 
+const heroCompanyLogos = [
+  { name: "Google", logo: "/coll1.png", alt: "Google logo" },
+  { name: "Stripe", logo: "/coll2.webp", alt: "Stripe logo" },
+  { name: "Nvidia", logo: "/coll3.png", alt: "Nvidia logo" },
+  { name: "AWS", logo: "/coll4.png", alt: "AWS logo" },
+  { name: "Salesforce", logo: "/coll5.png", alt: "Salesforce logo" },
+  { name: "HubSpot", logo: "/coll6.png", alt: "HubSpot logo" },
+];
+
 const keynotes = [
   {
-    title: "Winning the Next Decade of Business Growth",
+    title: "Culture Drives Profit",
     speakers: "Jesus Del Barrio",
     role: "Gemma Learn CEO",
     image: "/jesus.png",
@@ -92,7 +101,7 @@ const keynotes = [
     imagePosition: "54% 22%",
   },
   {
-    title: "How Top Leaders Make Decisions That Drive Results",
+    title: "The Decision Playbook of Top Leaders",
     speakers: "Estefani Robertson and Leo Armani",
     role: "Golden Minds CEO and VP",
     image: "/armani.png",
@@ -435,13 +444,30 @@ export default function App() {
                 href="#value"
                 onClick={(event) => handleAnimatedNav(event, "value")}
               >
-                View Agenda Highlights
+                View Agenda
               </a>
             </div>
             <p className="campaign-pill">
               Traffic source detected: <strong>{campaignSource}</strong>
             </p>
           </motion.div>
+          <motion.aside className="hero-logo-wall surface-card" variants={fadeUp} aria-label="Featured companies">
+            <p className="eyebrow">Who You Will Meet</p>
+            <p className="hero-logo-intro">Teams from high-performing companies join the room.</p>
+            <div className="hero-logo-grid" role="list">
+              {heroCompanyLogos.map((company) => (
+                <article className="hero-logo-card" key={company.name} role="listitem">
+                  <img
+                    className="hero-logo-image"
+                    src={company.logo}
+                    alt={company.alt}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </article>
+              ))}
+            </div>
+          </motion.aside>
         </motion.div>
       </header>
 
