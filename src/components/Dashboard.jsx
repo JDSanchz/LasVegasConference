@@ -28,6 +28,8 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 const dashboardGridTheme = themeQuartz.withPart(colorSchemeDarkBlue);
 
 const GENERATED_LEAD_COUNT = 10;
+const DASHBOARD_ACCESS_STORAGE_KEY = "lv_conf_dashboard_access_granted";
+const DASHBOARD_REQUIRED_PASSWORD = process.env.NEXT_PUBLIC_DASHBOARD_PASSWORD || "";
 const SOURCE_COLORS = ["#f1c85b", "#7dc8ff", "#8df4cb", "#ff9e7d", "#d6a9ff", "#ffe48f"];
 const FIRST_NAMES = [
   "Alex",
@@ -163,8 +165,26 @@ export default function Dashboard() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [dashboardUnlocked, setDashboardUnlocked] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    try {
+      const isUnlocked = localStorage.getItem(DASHBOARD_ACCESS_STORAGE_KEY) === "true";
+      setDashboardUnlocked(isUnlocked);
+    } catch {
+      setDashboardUnlocked(false);
+    }
+    setLoading(false);
+  }, []);
 
   async function loadLeads() {
+    if (!dashboardUnlocked) {
+      return;
+    }
+
     setLoading(true);
     setError("");
 
@@ -188,8 +208,39 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
-    loadLeads();
-  }, []);
+    if (dashboardUnlocked) {
+      loadLeads();
+    }
+  }, [dashboardUnlocked]);
+
+  function handleDashboardUnlock(event) {
+    event.preventDefault();
+    setPasswordError("");
+
+    if (!DASHBOARD_REQUIRED_PASSWORD) {
+      setPasswordError("Dashboard password is not configured.");
+      return;
+    }
+
+    if (passwordInput !== DASHBOARD_REQUIRED_PASSWORD) {
+      try {
+        localStorage.removeItem(DASHBOARD_ACCESS_STORAGE_KEY);
+      } catch {
+        // Ignore local storage errors in restricted browsers.
+      }
+      setDashboardUnlocked(false);
+      setPasswordError("Incorrect password.");
+      return;
+    }
+
+    try {
+      localStorage.setItem(DASHBOARD_ACCESS_STORAGE_KEY, "true");
+    } catch {
+      // Ignore local storage errors in restricted browsers.
+    }
+    setDashboardUnlocked(true);
+    setPasswordInput("");
+  }
 
   const leadsSorted = useMemo(() => {
     return [...leads].sort((left, right) => {
@@ -303,16 +354,63 @@ export default function Dashboard() {
 
   return (
     <div className="page-shell dashboard-page">
+      {!dashboardUnlocked ? (
+        <div
+          className="dashboard-access-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="dashboard-access-title"
+        >
+          <form className="dashboard-access-modal surface-card" onSubmit={handleDashboardUnlock}>
+            <p className="eyebrow">Restricted Access</p>
+            <h2 id="dashboard-access-title">Enter Dashboard Password</h2>
+            <p className="section-intro">
+              Access is locked. Enter the password to continue and load dashboard data.
+            </p>
+            <label htmlFor="dashboard-password" className="dashboard-access-label">
+              Password
+            </label>
+            <div className="dashboard-access-input-row">
+              <input
+                id="dashboard-password"
+                type={showPassword ? "text" : "password"}
+                value={passwordInput}
+                onChange={(event) => setPasswordInput(event.target.value)}
+                className="dashboard-access-input"
+                autoComplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                className="dashboard-access-visibility-btn"
+                onClick={() => setShowPassword((current) => !current)}
+                aria-controls="dashboard-password"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+            {passwordError ? (
+              <p className="status-message status-warning dashboard-access-error">{passwordError}</p>
+            ) : null}
+            <button type="submit" className="btn btn-primary dashboard-access-btn">
+              Unlock Dashboard
+            </button>
+          </form>
+        </div>
+      ) : null}
+
+      <div className={dashboardUnlocked ? "" : "dashboard-content-locked"} aria-hidden={!dashboardUnlocked}>
       <header className="dashboard-header surface-card">
         <div>
           <p className="eyebrow">Invite Analytics</p>
           <h1>Lead Dashboard</h1>
           <p className="section-intro">
-            Live view of all request data currently stored in your browser local storage.
+            Live view of all request data currently stored in your database.
           </p>
         </div>
         <div className="dashboard-header-actions">
-          <button type="button" className="btn btn-primary" onClick={loadLeads}>
+          <button type="button" className="btn btn-primary" onClick={loadLeads} disabled={!dashboardUnlocked}>
             Refresh Data
           </button>
           <Link href="/" className="btn btn-ghost">
@@ -480,6 +578,7 @@ export default function Dashboard() {
           />
         </div>
       </section>
+      </div>
     </div>
   );
 }
