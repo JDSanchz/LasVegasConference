@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 const UTM_KEYS = [
@@ -104,17 +104,63 @@ const keynotes = [
   {
     title: "Winning the Next Decade of Business Growth",
     speakers: "Jesus Del Barrio",
+    role: "Gemma Learn CEO",
+    image: "/jesus.png",
+    imageAlt: "Jesus Del Barrio keynote speaker",
+    imagePosition: "54% 22%",
   },
   {
     title: "How Top Leaders Make Decisions That Drive Results",
     speakers: "Estefani Robertson and Leo Armani",
+    role: "Golden Minds CEO and VP",
+    image: "/armani.png",
+    imageAlt: "Leo Armani keynote speaker",
+    imagePosition: "56% 20%",
   },
+];
+
+const spotlightExecutives = [
+  {
+    name: "Elon Musk",
+    title: "CEO",
+    company: "SpaceX and Tesla",
+    image: "/lv1.png",
+    imageAlt: "Elon Musk executive attendee",
+  },
+  {
+    name: "Elias Ayub",
+    title: "Investor",
+    company: "",
+    image: "/lv2.png",
+    imageAlt: "Elias Ayub executive attendee",
+  },
+  {
+    name: "Barack Obama",
+    title: "Former POTUS and Investor",
+    company: "",
+    image: "/lv3.png",
+    imageAlt: "Barack Obama executive attendee",
+  },
+];
+
+const credibilityStats = [
+  { key: "attendees", target: 500, suffix: "+", label: "Qualified attendees" },
+  { key: "speakers", target: 40, suffix: "+", label: "Industry speakers" },
+  { key: "days", target: 2, suffix: " Days", label: "Of focused deal flow" },
 ];
 
 export default function App() {
   const [formData, setFormData] = useState(initialFormState);
   const [utm, setUtm] = useState({});
   const [status, setStatus] = useState({ type: "idle", message: "" });
+  const [credibilityAnimated, setCredibilityAnimated] = useState(false);
+  const [statValues, setStatValues] = useState({
+    attendees: 0,
+    speakers: 0,
+    days: 0,
+  });
+  const [spotlightHintDismissed, setSpotlightHintDismissed] = useState(false);
+  const spotlightTrackRef = useRef(null);
 
   useEffect(() => {
     const urlUtm = getUtmFromUrl();
@@ -128,6 +174,38 @@ export default function App() {
   const campaignSource = useMemo(() => {
     return utm.utm_source || "Direct";
   }, [utm]);
+
+  useEffect(() => {
+    if (!credibilityAnimated) {
+      return;
+    }
+
+    const targets = { attendees: 500, speakers: 40, days: 2 };
+    const durationMs = 1300;
+    const startTime = performance.now();
+    let frameId = 0;
+
+    const step = (now) => {
+      const progress = Math.min((now - startTime) / durationMs, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+
+      setStatValues({
+        attendees: Math.round(targets.attendees * eased),
+        speakers: Math.round(targets.speakers * eased),
+        days: Math.round(targets.days * eased),
+      });
+
+      if (progress < 1) {
+        frameId = window.requestAnimationFrame(step);
+      }
+    };
+
+    frameId = window.requestAnimationFrame(step);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [credibilityAnimated]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -184,6 +262,42 @@ export default function App() {
     });
   }
 
+  function handleAnimatedNav(event, targetId) {
+    event.preventDefault();
+    const targetElement = document.getElementById(targetId);
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
+  function scrollSpotlight(direction) {
+    const track = spotlightTrackRef.current;
+    if (!track || track.children.length === 0) {
+      return;
+    }
+
+    const firstCard = track.children[0];
+    const cardWidth = firstCard.getBoundingClientRect().width;
+    const styles = window.getComputedStyle(track);
+    const gap = Number.parseFloat(styles.columnGap || styles.gap || "0") || 0;
+    const step = cardWidth + gap;
+
+    track.scrollBy({
+      left: direction === "next" ? step : -step,
+      behavior: "smooth",
+    });
+  }
+
+  function handleSpotlightScroll(event) {
+    if (spotlightHintDismissed) {
+      return;
+    }
+
+    if (event.currentTarget.scrollLeft > 24) {
+      setSpotlightHintDismissed(true);
+    }
+  }
+
   return (
     <div className="page-shell">
       <header className="hero" id="top">
@@ -203,36 +317,24 @@ export default function App() {
               strategic sessions and curated networking in Las Vegas.
             </p>
             <div className="hero-actions">
-              <a className="btn btn-primary" href="#lead-form">
+              <a
+                className="btn btn-primary"
+                href="#lead-form"
+                onClick={(event) => handleAnimatedNav(event, "lead-form")}
+              >
                 Request My Invite
               </a>
-              <a className="btn btn-ghost" href="#value">
+              <a
+                className="btn btn-ghost"
+                href="#value"
+                onClick={(event) => handleAnimatedNav(event, "value")}
+              >
                 View Agenda Highlights
               </a>
             </div>
             <p className="campaign-pill">
               Traffic source detected: <strong>{campaignSource}</strong>
             </p>
-          </motion.div>
-
-          <motion.div className="hero-visual" variants={fadeUp}>
-            <div className="hero-visual-panel">
-              <div className="skyline" aria-hidden="true">
-                <span />
-                <span />
-                <span />
-                <span />
-                <span />
-                <span />
-              </div>
-              <p className="panel-title">Featured Event Highlights</p>
-              <ul>
-                <li>Private executive networking sessions</li>
-                <li>Actionable growth and GTM playbooks</li>
-                <li>High-intent partner and investor introductions</li>
-              </ul>
-              <p className="panel-foot">Limited seating by application only</p>
-            </div>
           </motion.div>
         </motion.div>
       </header>
@@ -262,6 +364,78 @@ export default function App() {
         </motion.section>
 
         <motion.section
+          className="section spotlight-section"
+          id="executive-spotlight"
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.3 }}
+        >
+          <motion.div className="spotlight-header" variants={fadeUp}>
+            <div>
+              <h2>Executive Spotlight</h2>
+              <p className="section-intro">
+                Meet a select group of executives attending this year&apos;s event.
+                Their presence reflects the caliber of leadership and deal activity
+                inside the room.
+              </p>
+            </div>
+            <div className="spotlight-controls" aria-label="Executive carousel controls">
+              <button
+                type="button"
+                className="spotlight-control-btn"
+                onClick={() => scrollSpotlight("prev")}
+                aria-label="Previous executives"
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                className="spotlight-control-btn"
+                onClick={() => scrollSpotlight("next")}
+                aria-label="Next executives"
+              >
+                Next
+              </button>
+            </div>
+          </motion.div>
+
+          <div className="spotlight-carousel-shell">
+            <motion.div
+              className="spotlight-track"
+              variants={fadeUp}
+              ref={spotlightTrackRef}
+              onScroll={handleSpotlightScroll}
+            >
+              {spotlightExecutives.map((executive) => (
+                <article className="spotlight-card" key={executive.name}>
+                  <img
+                    className="spotlight-photo"
+                    src={executive.image}
+                    alt={executive.imageAlt}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <div className="spotlight-card-content">
+                    <h3>{executive.name}</h3>
+                    <p className="spotlight-title">{executive.title}</p>
+                    {executive.company ? (
+                      <p className="spotlight-company">{executive.company}</p>
+                    ) : null}
+                  </div>
+                </article>
+              ))}
+            </motion.div>
+            {!spotlightHintDismissed ? <div className="spotlight-edge-cue" aria-hidden="true" /> : null}
+            {!spotlightHintDismissed ? (
+              <div className="spotlight-image-arrow" aria-hidden="true">
+                →
+              </div>
+            ) : null}
+          </div>
+        </motion.section>
+
+        <motion.section
           className="section keynote-section"
           id="keynotes"
           variants={stagger}
@@ -280,11 +454,21 @@ export default function App() {
                 className="keynote-card"
                 variants={fadeUp}
               >
-                <div className="keynote-photo-placeholder" aria-label="Speaker image placeholder">
-                  Speaker Image Placeholder
+                <div className="keynote-media">
+                  <img
+                    className="keynote-photo"
+                    src={keynote.image}
+                    alt={keynote.imageAlt}
+                    style={{ objectPosition: keynote.imagePosition }}
+                    loading="lazy"
+                    decoding="async"
+                  />
                 </div>
-                <h3>{keynote.title}</h3>
-                <p className="keynote-speaker">By {keynote.speakers}</p>
+                <div className="keynote-content">
+                  <h3>{keynote.title}</h3>
+                  <p className="keynote-speaker">By {keynote.speakers}</p>
+                  <p className="keynote-role">{keynote.role}</p>
+                </div>
               </motion.article>
             ))}
           </motion.div>
@@ -295,27 +479,28 @@ export default function App() {
           variants={stagger}
           initial="hidden"
           whileInView="show"
+          onViewportEnter={() => setCredibilityAnimated(true)}
           viewport={{ once: true, amount: 0.3 }}
         >
           <motion.h2 variants={fadeUp}>Built for Decision Makers</motion.h2>
           <motion.div className="credibility-grid" variants={stagger}>
-            <motion.div className="stat" variants={fadeUp}>
-              <p className="stat-number">500+</p>
-              <p className="stat-label">Qualified attendees</p>
-            </motion.div>
-            <motion.div className="stat" variants={fadeUp}>
-              <p className="stat-number">40+</p>
-              <p className="stat-label">Industry speakers</p>
-            </motion.div>
-            <motion.div className="stat" variants={fadeUp}>
-              <p className="stat-number">2 Days</p>
-              <p className="stat-label">Of focused deal flow</p>
-            </motion.div>
+            {credibilityStats.map((stat) => (
+              <motion.div className="stat" variants={fadeUp} key={stat.key}>
+                <p
+                  className={`stat-number${credibilityAnimated ? " stat-number-animated" : ""}`}
+                >
+                  {statValues[stat.key]}
+                  {stat.suffix}
+                </p>
+                <p className="stat-label">{stat.label}</p>
+              </motion.div>
+            ))}
             <motion.div className="attendee-list" variants={fadeUp}>
-              <p>Who you will meet</p>
               <ul>
                 {attendees.map((attendee) => (
-                  <li key={attendee}>{attendee}</li>
+                  <li key={attendee}>
+                    {attendee}
+                  </li>
                 ))}
               </ul>
             </motion.div>
@@ -442,22 +627,6 @@ export default function App() {
           </motion.form>
         </motion.section>
 
-        <motion.section
-          className="section final-cta"
-          variants={fadeUp}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, amount: 0.5 }}
-        >
-          <h2>Invitation Requests Closing Soon</h2>
-          <p>
-            A limited number of seats are available for this round. Submit your
-            request now to be considered before invitations are finalized.
-          </p>
-          <a className="btn btn-primary" href="#lead-form">
-            Request My Invite
-          </a>
-        </motion.section>
       </main>
     </div>
   );
