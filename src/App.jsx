@@ -141,6 +141,57 @@ const credibilityStats = [
 
 const credibilityClosingStat = { key: "days", target: 2, suffix: " Days", label: "Of focused deal flow" };
 
+function getSpotlightStep(track) {
+  if (!track || track.children.length === 0) {
+    return { step: 0, maxScrollLeft: 0 };
+  }
+
+  const firstCard = track.children[0];
+  const cardWidth = firstCard.getBoundingClientRect().width;
+  const styles = window.getComputedStyle(track);
+  const gap = Number.parseFloat(styles.columnGap || styles.gap || "0") || 0;
+  const step = cardWidth + gap;
+  const maxScrollLeft = Math.max(track.scrollWidth - track.clientWidth, 0);
+
+  return { step, maxScrollLeft };
+}
+
+function scrollSpotlightTrack(track, direction, options = {}) {
+  if (!track) {
+    return;
+  }
+
+  const { wrap = false, behavior = "smooth" } = options;
+  const { step, maxScrollLeft } = getSpotlightStep(track);
+
+  if (step <= 0) {
+    return;
+  }
+
+  if (direction === "next") {
+    if (wrap && track.scrollLeft >= maxScrollLeft - 8) {
+      track.scrollTo({ left: 0, behavior: "auto" });
+      return;
+    }
+
+    track.scrollTo({
+      left: Math.min(track.scrollLeft + step, maxScrollLeft),
+      behavior,
+    });
+    return;
+  }
+
+  if (wrap && track.scrollLeft <= 8) {
+    track.scrollTo({ left: maxScrollLeft, behavior: "auto" });
+    return;
+  }
+
+  track.scrollTo({
+    left: Math.max(track.scrollLeft - step, 0),
+    behavior,
+  });
+}
+
 function ParallaxSection({
   children,
   className = "",
@@ -185,6 +236,7 @@ export default function App() {
     networking: 0,
     days: 0,
   });
+  const [isMobileSpotlight, setIsMobileSpotlight] = useState(false);
   const [spotlightHintDismissed, setSpotlightHintDismissed] = useState(false);
   const spotlightTrackRef = useRef(null);
 
@@ -271,6 +323,41 @@ export default function App() {
     };
   }, [credibilityAnimated]);
 
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 699px)");
+    const update = () => {
+      setIsMobileSpotlight(mediaQuery.matches);
+    };
+
+    update();
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", update);
+      return () => {
+        mediaQuery.removeEventListener("change", update);
+      };
+    }
+
+    mediaQuery.addListener(update);
+    return () => {
+      mediaQuery.removeListener(update);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isMobileSpotlight || shouldReduceMotion) {
+      return;
+    }
+
+    const timerId = window.setInterval(() => {
+      scrollSpotlightTrack(spotlightTrackRef.current, "next", { wrap: true });
+    }, 3000);
+
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, [isMobileSpotlight, shouldReduceMotion]);
+
   function handleChange(event) {
     const { name, value } = event.target;
     setFormData((current) => ({
@@ -335,21 +422,7 @@ export default function App() {
   }
 
   function scrollSpotlight(direction) {
-    const track = spotlightTrackRef.current;
-    if (!track || track.children.length === 0) {
-      return;
-    }
-
-    const firstCard = track.children[0];
-    const cardWidth = firstCard.getBoundingClientRect().width;
-    const styles = window.getComputedStyle(track);
-    const gap = Number.parseFloat(styles.columnGap || styles.gap || "0") || 0;
-    const step = cardWidth + gap;
-
-    track.scrollBy({
-      left: direction === "next" ? step : -step,
-      behavior: "smooth",
-    });
+    scrollSpotlightTrack(spotlightTrackRef.current, direction, { wrap: true });
   }
 
   function handleSpotlightScroll(event) {
