@@ -437,9 +437,6 @@ export default function App() {
               >
                 View Agenda Highlights
               </a>
-              <a className="btn btn-ghost" href="/dashboard">
-                View Lead Dashboard
-              </a>
             </div>
             <p className="campaign-pill">
               Traffic source detected: <strong>{campaignSource}</strong>
