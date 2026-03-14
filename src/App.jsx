@@ -428,8 +428,7 @@ export default function App() {
               An Invite-Only Room for Leaders, Capital, and High-Value Partnerships.
             </h1>
             <p className="hero-subheadline">
-              Join top operators, investors, and growth leaders for two days of
-              strategic sessions and curated networking in Las Vegas.
+              Where deals start, capital moves, and partnerships are formed.
             </p>
             <div className="hero-actions">
               <a
@@ -447,6 +446,7 @@ export default function App() {
                 View Agenda
               </a>
             </div>
+            <p className="hero-urgency">Limited executive seats available</p>
             <p className="campaign-pill">
               Traffic source detected: <strong>{campaignSource}</strong>
             </p>
