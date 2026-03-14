@@ -416,7 +416,7 @@ export default function App() {
           <motion.div className="hero-content surface-card" variants={fadeUp}>
             <p className="eyebrow">Las Vegas Executive Conference 2026</p>
             <h1>
-              The Invite-Only Room Where High-Value Deals Start.
+              An Invite-Only Room for Leaders, Capital, and High-Value Partnerships.
             </h1>
             <p className="hero-subheadline">
               Join top operators, investors, and growth leaders for two days of
