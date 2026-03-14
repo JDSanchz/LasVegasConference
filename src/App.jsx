@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { createLiquidGlassMap } from "./liquidGlass";
 
 const UTM_KEYS = [
   "utm_source",
@@ -160,6 +161,10 @@ export default function App() {
     days: 0,
   });
   const [spotlightHintDismissed, setSpotlightHintDismissed] = useState(false);
+  const [liquidGlass, setLiquidGlass] = useState({
+    dataUrl: "",
+    scale: 20,
+  });
   const spotlightTrackRef = useRef(null);
 
   useEffect(() => {
@@ -169,6 +174,23 @@ export default function App() {
 
     setUtm(merged);
     saveStoredUtm(merged);
+  }, []);
+
+  useEffect(() => {
+    const { dataUrl, maxDisplacement } = createLiquidGlassMap({
+      size: 128,
+      samples: 127,
+      bezel: 0.25,
+      ior: 1.46,
+      thickness: 22,
+      surface: "convex-squircle",
+    });
+
+    const scaledDisplacement = Math.round(Math.max(14, Math.min(36, maxDisplacement * 1.45)));
+    setLiquidGlass({
+      dataUrl,
+      scale: scaledDisplacement,
+    });
   }, []);
 
   const campaignSource = useMemo(() => {
@@ -299,7 +321,42 @@ export default function App() {
   }
 
   return (
-    <div className="page-shell">
+    <div className={`page-shell${liquidGlass.dataUrl ? " liquid-ready" : ""}`}>
+      <svg
+        className="liquid-filter-defs"
+        aria-hidden="true"
+        focusable="false"
+        width="0"
+        height="0"
+      >
+        <filter
+          id="liquid-glass-filter"
+          x="-20%"
+          y="-20%"
+          width="140%"
+          height="140%"
+          colorInterpolationFilters="sRGB"
+        >
+          {liquidGlass.dataUrl ? (
+            <feImage
+              href={liquidGlass.dataUrl}
+              x="0%"
+              y="0%"
+              width="100%"
+              height="100%"
+              preserveAspectRatio="none"
+              result="liquid-map"
+            />
+          ) : null}
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="liquid-map"
+            scale={liquidGlass.scale}
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+      </svg>
       <header className="hero" id="top">
         <motion.div
           className="hero-grid"
@@ -307,7 +364,7 @@ export default function App() {
           initial="hidden"
           animate="show"
         >
-          <motion.div className="hero-content" variants={fadeUp}>
+          <motion.div className="hero-content glass-panel" variants={fadeUp}>
             <p className="eyebrow">Las Vegas Executive Conference 2026</p>
             <h1>
               The Invite-Only Room Where High-Value Deals Start.
@@ -355,7 +412,7 @@ export default function App() {
           </motion.p>
           <motion.div className="card-grid" variants={stagger}>
             {valueCards.map((card) => (
-              <motion.article key={card.title} className="value-card" variants={fadeUp}>
+              <motion.article key={card.title} className="value-card glass-panel" variants={fadeUp}>
                 <h3>{card.title}</h3>
                 <p>{card.text}</p>
               </motion.article>
@@ -408,7 +465,7 @@ export default function App() {
               onScroll={handleSpotlightScroll}
             >
               {spotlightExecutives.map((executive) => (
-                <article className="spotlight-card" key={executive.name}>
+                <article className="spotlight-card glass-panel" key={executive.name}>
                   <img
                     className="spotlight-photo"
                     src={executive.image}
@@ -451,7 +508,7 @@ export default function App() {
             {keynotes.map((keynote) => (
               <motion.article
                 key={keynote.title}
-                className="keynote-card"
+                className="keynote-card glass-panel"
                 variants={fadeUp}
               >
                 <div className="keynote-media">
@@ -485,7 +542,7 @@ export default function App() {
           <motion.h2 variants={fadeUp}>Built for Decision Makers</motion.h2>
           <motion.div className="credibility-grid" variants={stagger}>
             {credibilityStats.map((stat) => (
-              <motion.div className="stat" variants={fadeUp} key={stat.key}>
+              <motion.div className="stat glass-panel" variants={fadeUp} key={stat.key}>
                 <p
                   className={`stat-number${credibilityAnimated ? " stat-number-animated" : ""}`}
                 >
@@ -495,7 +552,7 @@ export default function App() {
                 <p className="stat-label">{stat.label}</p>
               </motion.div>
             ))}
-            <motion.div className="attendee-list" variants={fadeUp}>
+            <motion.div className="attendee-list glass-panel" variants={fadeUp}>
               <ul>
                 {attendees.map((attendee) => (
                   <li key={attendee}>
@@ -508,7 +565,7 @@ export default function App() {
         </motion.section>
 
         <motion.section
-          className="section form-section"
+          className="section form-section glass-panel"
           id="lead-form"
           variants={stagger}
           initial="hidden"
@@ -523,97 +580,113 @@ export default function App() {
           </motion.div>
 
           <motion.form className="lead-form" onSubmit={handleSubmit} variants={fadeUp}>
-            <label htmlFor="firstName">First Name</label>
-            <input
-              id="firstName"
-              name="firstName"
-              type="text"
-              autoComplete="given-name"
-              value={formData.firstName}
-              onChange={handleChange}
-              required
-            />
+            <div className="form-field">
+              <label htmlFor="firstName">First Name</label>
+              <input
+                id="firstName"
+                name="firstName"
+                type="text"
+                autoComplete="given-name"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-            <label htmlFor="lastName">Last Name</label>
-            <input
-              id="lastName"
-              name="lastName"
-              type="text"
-              autoComplete="family-name"
-              value={formData.lastName}
-              onChange={handleChange}
-              required
-            />
+            <div className="form-field">
+              <label htmlFor="lastName">Last Name</label>
+              <input
+                id="lastName"
+                name="lastName"
+                type="text"
+                autoComplete="family-name"
+                value={formData.lastName}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
+            <div className="form-field">
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-            <label htmlFor="company">Company</label>
-            <input
-              id="company"
-              name="company"
-              type="text"
-              autoComplete="organization"
-              value={formData.company}
-              onChange={handleChange}
-              required
-            />
+            <div className="form-field">
+              <label htmlFor="jobTitle">Job Title</label>
+              <input
+                id="jobTitle"
+                name="jobTitle"
+                type="text"
+                autoComplete="organization-title"
+                value={formData.jobTitle}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-            <label htmlFor="jobTitle">Job Title</label>
-            <input
-              id="jobTitle"
-              name="jobTitle"
-              type="text"
-              autoComplete="organization-title"
-              value={formData.jobTitle}
-              onChange={handleChange}
-              required
-            />
+            <div className="form-field">
+              <label htmlFor="phone">Phone</label>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                value={formData.phone}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-            <label htmlFor="phone">Phone</label>
-            <input
-              id="phone"
-              name="phone"
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              value={formData.phone}
-              onChange={handleChange}
-              required
-            />
+            <div className="form-field">
+              <label htmlFor="industry">Industry (Optional)</label>
+              <input
+                id="industry"
+                name="industry"
+                type="text"
+                autoComplete="off"
+                value={formData.industry}
+                onChange={handleChange}
+              />
+            </div>
 
-            <label htmlFor="industry">Industry (Optional)</label>
-            <input
-              id="industry"
-              name="industry"
-              type="text"
-              autoComplete="off"
-              value={formData.industry}
-              onChange={handleChange}
-            />
+            <div className="form-field">
+              <label htmlFor="companySize">Company Size (Optional)</label>
+              <select
+                id="companySize"
+                name="companySize"
+                value={formData.companySize}
+                onChange={handleChange}
+              >
+                <option value="">Select company size</option>
+                <option value="1-10">1-10</option>
+                <option value="11-50">11-50</option>
+                <option value="51-200">51-200</option>
+                <option value="201-500">201-500</option>
+                <option value="501+">501+</option>
+              </select>
+            </div>
 
-            <label htmlFor="companySize">Company Size (Optional)</label>
-            <select
-              id="companySize"
-              name="companySize"
-              value={formData.companySize}
-              onChange={handleChange}
-            >
-              <option value="">Select company size</option>
-              <option value="1-10">1-10</option>
-              <option value="11-50">11-50</option>
-              <option value="51-200">51-200</option>
-              <option value="201-500">201-500</option>
-              <option value="501+">501+</option>
-            </select>
+            <div className="form-field">
+              <label htmlFor="company">Company</label>
+              <input
+                id="company"
+                name="company"
+                type="text"
+                autoComplete="organization"
+                value={formData.company}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
             <button type="submit" className="btn btn-primary full-width">
               {status.type === "loading" ? "Submitting..." : "Reserve My Spot"}
