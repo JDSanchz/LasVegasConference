@@ -351,7 +351,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!isMobileSpotlight || shouldReduceMotion) {
+    if (!isMobileSpotlight) {
       return;
     }
 
@@ -362,7 +362,7 @@ export default function App() {
     return () => {
       window.clearInterval(timerId);
     };
-  }, [isMobileSpotlight, shouldReduceMotion]);
+  }, [isMobileSpotlight]);
 
   useEffect(() => {
     const track = spotlightTrackRef.current;
