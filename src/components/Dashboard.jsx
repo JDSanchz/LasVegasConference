@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import {
   Area,
   AreaChart,
@@ -27,7 +27,7 @@ import { createLead, listLeadRequests } from "../api/client";
 ModuleRegistry.registerModules([AllCommunityModule]);
 const dashboardGridTheme = themeQuartz.withPart(colorSchemeDarkBlue);
 
-const GENERATED_LEAD_COUNT = 20;
+const GENERATED_LEAD_COUNT = 10;
 const SOURCE_COLORS = ["#f1c85b", "#7dc8ff", "#8df4cb", "#ff9e7d", "#d6a9ff", "#ffe48f"];
 const FIRST_NAMES = [
   "Alex",
@@ -315,7 +315,7 @@ export default function Dashboard() {
           <button type="button" className="btn btn-primary" onClick={loadLeads}>
             Refresh Data
           </button>
-          <Link to="/" className="btn btn-ghost">
+          <Link href="/" className="btn btn-ghost">
             Back To Landing
           </Link>
         </div>

@@ -1,6 +1,6 @@
-# Las Vegas Conference Landing Page
+# Las Vegas Conference App (Next.js)
 
-Premium, mobile-first lead generation landing page built with React + Framer Motion.
+Landing page + dashboard + API in one Next.js repo.
 
 ## Run locally
 
@@ -9,29 +9,35 @@ npm install
 npm run dev
 ```
 
-## Build
+## Build and run
 
 ```bash
 npm run build
-npm run preview
+npm run start
 ```
 
-## Lead capture and UTM tracking
+## Routes
 
-- Required lead fields: first name, last name, email, company, job title, social handle.
-- UTM params captured: `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`.
-- Form submissions are handled by an internal API router in `src/api`.
-- Lead records are saved in `localStorage` under `lv_conf_leads`.
+- `/` -> landing page
+- `/dashboard` -> lead analytics dashboard
 
-### Local API endpoint structure
+## API
 
-- `GET /api/health` -> health check for the local API.
-- `GET /api/leads` -> returns all saved lead requests from local storage.
-- `POST /api/leads` -> validates and saves a lead request to local storage.
-- `GET /api/leads/:id` -> returns a single lead request by id.
+- `GET /api/health` -> health check
+- `GET /api/leads` -> list all lead requests
+- `POST /api/leads` -> validate and create a lead request
+- `GET /api/leads/:id` -> get a specific lead request
 
-## Dashboard
+Required fields for `POST /api/leads`:
 
-- Open `/dashboard` to view local analytics and lead data.
-- Includes 3 charts (submission velocity, traffic sources, top companies).
-- Includes full AG Grid table with all saved invite requests.
+- `firstName`
+- `lastName`
+- `email`
+- `company`
+- `jobTitle`
+- `socialHandle`
+
+## Data storage
+
+- Lead records are stored in Postgres using `DATABASE_URL`.
+- UTM params captured from the landing page: `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`.

@@ -1,12 +1,9 @@
 #!/usr/bin/env node
 
-import fs from "node:fs";
-import path from "node:path";
-import { randomUUID } from "node:crypto";
-import { createLead, listLeadRequests } from "../src/api/client.js";
+import { insertLead, listLeads } from "../src/server/lead-storage.js";
+import { validateLeadPayload } from "../src/server/lead-validation.js";
 
 const DEFAULT_COUNT = 150;
-const DEFAULT_STORAGE_FILE = path.resolve(process.cwd(), "local-data/localStorage.json");
 const COMPANY_NAMES = [
   "Tesla",
   "Ford",
@@ -35,7 +32,6 @@ const UTM_CAMPAIGNS = [
 function parseArgs(argv) {
   const options = {
     count: DEFAULT_COUNT,
-    file: DEFAULT_STORAGE_FILE,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -50,64 +46,9 @@ function parseArgs(argv) {
       continue;
     }
 
-    if (arg === "--file") {
-      const value = argv[index + 1];
-      if (value) {
-        options.file = path.resolve(process.cwd(), value);
-      }
-      index += 1;
-    }
   }
 
   return options;
-}
-
-function readStore(filePath) {
-  try {
-    const raw = fs.readFileSync(filePath, "utf8");
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function createFileBackedLocalStorage(filePath) {
-  let store = readStore(filePath);
-
-  function persist() {
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    fs.writeFileSync(filePath, JSON.stringify(store, null, 2), "utf8");
-  }
-
-  return {
-    getItem(key) {
-      return Object.prototype.hasOwnProperty.call(store, key) ? String(store[key]) : null;
-    },
-    setItem(key, value) {
-      store[key] = String(value);
-      persist();
-    },
-    removeItem(key) {
-      delete store[key];
-      persist();
-    },
-    clear() {
-      store = {};
-      persist();
-    },
-  };
-}
-
-function ensureCryptoRandomUuid() {
-  if (globalThis.crypto && typeof globalThis.crypto.randomUUID === "function") {
-    return;
-  }
-
-  globalThis.crypto = {
-    ...(globalThis.crypto || {}),
-    randomUUID,
-  };
 }
 
 function buildLead(index) {
@@ -130,38 +71,42 @@ function buildLead(index) {
     },
     submittedAt: new Date().toISOString(),
     landingPath: "/",
-    landingHost: "localhost:5173",
+    landingHost: "localhost:3000",
   };
 }
 
 async function run() {
-  const { count, file } = parseArgs(process.argv.slice(2));
-
-  ensureCryptoRandomUuid();
-  globalThis.localStorage = createFileBackedLocalStorage(file);
+  const { count } = parseArgs(process.argv.slice(2));
 
   let created = 0;
   let failed = 0;
 
   for (let index = 0; index < count; index += 1) {
-    const response = await createLead(buildLead(index));
-    if (response.ok) {
-      created += 1;
-    } else {
+    const payload = buildLead(index);
+    const validationError = validateLeadPayload(payload);
+
+    if (validationError) {
       failed += 1;
-      const message = response.data?.error || "Unknown error";
-      console.error(`Failed form ${index + 1}: ${message}`);
+      console.error(`Failed form ${index + 1}: ${validationError}`);
+      continue;
+    }
+
+    try {
+      await insertLead(payload);
+      created += 1;
+    } catch (error) {
+      failed += 1;
+      console.error(`Failed form ${index + 1}: ${error?.message || "Unknown error"}`);
     }
   }
 
-  const listResponse = await listLeadRequests();
-  const totalStored = listResponse.ok ? listResponse.data?.leads?.length ?? 0 : "unknown";
+  const leads = await listLeads();
 
   console.log(`Sent: ${count}`);
   console.log(`Created: ${created}`);
   console.log(`Failed: ${failed}`);
-  console.log(`Total leads currently stored: ${totalStored}`);
-  console.log(`Storage file: ${file}`);
+  console.log(`Total leads currently stored: ${leads.length}`);
+  console.log("Storage: postgres");
 }
 
 run().catch((error) => {
