@@ -3,17 +3,19 @@
 :root {
   --bg: #050505;
   --bg-soft: #0c0c0f;
-  --surface: #131216;
-  --surface-soft: #1a181e;
+  --surface: rgba(24, 21, 30, 0.52);
+  --surface-soft: rgba(20, 18, 25, 0.36);
   --text: #f4efe4;
   --muted: #c3b79b;
   --primary: #d8aa3c;
   --primary-strong: #f1c85b;
   --accent-deep: #7d5b21;
-  --border: #2d2416;
+  --border: rgba(255, 255, 255, 0.22);
   --ring: rgba(241, 200, 91, 0.35);
-  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.55);
-  --shadow-2: 0 16px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(216, 170, 60, 0.16);
+  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.48), 0 10px 24px rgba(0, 0, 0, 0.3);
+  --shadow-2: 0 18px 34px rgba(0, 0, 0, 0.46), 0 0 0 1px rgba(241, 200, 91, 0.16);
+  --bg-parallax-mid: 0px;
+  --bg-parallax-top: 0px;
 }
 
 * {
@@ -29,12 +31,43 @@ body,
 
 body {
   font-family: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
+  position: relative;
+  isolation: isolate;
+  overflow-x: hidden;
   color: var(--text);
   background:
     radial-gradient(circle at 88% -8%, rgba(216, 170, 60, 0.2), transparent 30%),
     radial-gradient(circle at -4% 8%, rgba(216, 170, 60, 0.14), transparent 35%),
     linear-gradient(180deg, #050505 0%, #09090b 42%, #0d0b07 100%);
   line-height: 1.55;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: -8% -6%;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 80% 18%, rgba(216, 170, 60, 0.14), transparent 42%),
+    radial-gradient(circle at 16% 78%, rgba(76, 121, 199, 0.14), transparent 48%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.02) 0 1px, transparent 1px 120px);
+  transform: translate3d(0, var(--bg-parallax-mid), 0);
+  will-change: transform;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: -6% -4%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0) 38%, rgba(255, 255, 255, 0.03) 50%, rgba(255, 255, 255, 0) 62%),
+    radial-gradient(circle at 84% 14%, rgba(216, 170, 60, 0.1), transparent 50%),
+    radial-gradient(circle at 12% 12%, rgba(76, 121, 199, 0.1), transparent 56%);
+  transform: translate3d(0, var(--bg-parallax-top), 0);
+  will-change: transform;
 }
 
 .page-shell {
@@ -54,17 +87,30 @@ body {
 
 .surface-card {
   background:
-    linear-gradient(155deg, rgba(255, 255, 255, 0.04), transparent 36%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.03) 36%, transparent 62%),
     linear-gradient(180deg, var(--surface) 0%, var(--surface-soft) 100%);
   border: 1px solid var(--border);
   border-radius: 14px;
+  backdrop-filter: blur(15px) saturate(145%);
+  -webkit-backdrop-filter: blur(15px) saturate(145%);
   box-shadow: var(--shadow-1);
+  position: relative;
+  overflow: hidden;
   transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
 }
 
 .surface-card:hover {
   box-shadow: var(--shadow-2);
-  border-color: rgba(241, 200, 91, 0.45);
+  border-color: rgba(255, 255, 255, 0.36);
+}
+
+.surface-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .hero-content {
@@ -150,14 +196,16 @@ select:focus-visible {
 }
 
 .btn-ghost {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--primary-strong);
-  border-color: rgba(241, 200, 91, 0.45);
+  border-color: rgba(255, 255, 255, 0.32);
+  backdrop-filter: blur(10px) saturate(145%);
+  -webkit-backdrop-filter: blur(10px) saturate(145%);
 }
 
 .btn-ghost:hover {
-  background: rgba(241, 200, 91, 0.08);
-  border-color: rgba(241, 200, 91, 0.75);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.45);
 }
 
 .full-width {
@@ -231,20 +279,22 @@ select:focus-visible {
 .spotlight-control-btn {
   min-height: 38px;
   border-radius: 10px;
-  border: 1px solid rgba(241, 200, 91, 0.5);
-  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--primary-strong);
   padding: 0.45rem 0.85rem;
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+  backdrop-filter: blur(10px) saturate(145%);
+  -webkit-backdrop-filter: blur(10px) saturate(145%);
   transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .spotlight-control-btn:hover {
   transform: translateY(-1px);
-  background: rgba(241, 200, 91, 0.1);
-  border-color: rgba(241, 200, 91, 0.8);
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.48);
 }
 
 .spotlight-control-btn:focus-visible {
@@ -445,18 +495,20 @@ select:focus-visible {
 .lead-form select {
   width: 100%;
   min-height: 46px;
-  border: 1px solid #544224;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 10px;
-  background: #100f13;
+  background: rgba(10, 10, 14, 0.5);
   color: var(--text);
   padding: 0.7rem 0.85rem;
   font: inherit;
+  backdrop-filter: blur(8px) saturate(130%);
+  -webkit-backdrop-filter: blur(8px) saturate(130%);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .lead-form input:hover,
 .lead-form select:hover {
-  border-color: #8f7139;
+  border-color: rgba(255, 255, 255, 0.48);
 }
 
 .lead-form input:focus-visible,
@@ -573,5 +625,10 @@ select:focus-visible {
   .spotlight-edge-cue,
   .spotlight-image-arrow {
     animation: none;
+  }
+
+  body::before,
+  body::after {
+    transform: translate3d(0, 0, 0);
   }
 }
