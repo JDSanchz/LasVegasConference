@@ -94,13 +94,6 @@ const valueCards = [
   },
 ];
 
-const attendees = [
-  "CEOs & Founders",
-  "VP Sales & Revenue Leaders",
-  "Private Equity & Investors",
-  "Enterprise Strategy Teams",
-];
-
 const keynotes = [
   {
     title: "Winning the Next Decade of Business Growth",
@@ -147,8 +140,9 @@ const spotlightExecutives = [
 const credibilityStats = [
   { key: "attendees", target: 500, suffix: "+", label: "Qualified attendees" },
   { key: "speakers", target: 40, suffix: "+", label: "Industry speakers" },
-  { key: "days", target: 2, suffix: " Days", label: "Of focused deal flow" },
 ];
+
+const credibilityClosingStat = { key: "days", target: 2, suffix: " Days", label: "Of focused deal flow" };
 
 export default function App() {
   const [formData, setFormData] = useState(initialFormState);
@@ -158,6 +152,7 @@ export default function App() {
   const [statValues, setStatValues] = useState({
     attendees: 0,
     speakers: 0,
+    networking: 0,
     days: 0,
   });
   const [spotlightHintDismissed, setSpotlightHintDismissed] = useState(false);
@@ -202,7 +197,7 @@ export default function App() {
       return;
     }
 
-    const targets = { attendees: 500, speakers: 40, days: 2 };
+    const targets = { attendees: 500, speakers: 40, networking: 30, days: 2 };
     const durationMs = 1300;
     const startTime = performance.now();
     let frameId = 0;
@@ -214,6 +209,7 @@ export default function App() {
       setStatValues({
         attendees: Math.round(targets.attendees * eased),
         speakers: Math.round(targets.speakers * eased),
+        networking: Math.round(targets.networking * eased),
         days: Math.round(targets.days * eased),
       });
 
@@ -580,13 +576,21 @@ export default function App() {
               </motion.div>
             ))}
             <motion.div className="attendee-list glass-panel" variants={fadeUp}>
-              <ul>
-                {attendees.map((attendee) => (
-                  <li key={attendee}>
-                    {attendee}
-                  </li>
-                ))}
-              </ul>
+              <p
+                className={`stat-number${credibilityAnimated ? " stat-number-animated" : ""}`}
+              >
+                {statValues.networking}+
+              </p>
+              <p className="stat-label">Networking Sessions</p>
+            </motion.div>
+            <motion.div className="stat glass-panel" variants={fadeUp}>
+              <p
+                className={`stat-number${credibilityAnimated ? " stat-number-animated" : ""}`}
+              >
+                {statValues[credibilityClosingStat.key]}
+                {credibilityClosingStat.suffix}
+              </p>
+              <p className="stat-label">{credibilityClosingStat.label}</p>
             </motion.div>
           </motion.div>
         </motion.section>
