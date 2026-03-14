@@ -1,0 +1,456 @@
+:root {
+  --bg: #051120;
+  --bg-soft: #051120;
+  --card: #051120;
+  --text: #ffffff;
+  --muted: #ffffff;
+  --accent: #ffd23f;
+  --accent-strong: #ffd23f;
+  --accent-secondary: #296eb4;
+  --line: rgba(41, 110, 180, 0.55);
+  --line-soft: rgba(255, 255, 255, 0.16);
+  --ring: rgba(255, 210, 63, 0.45);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: "Inter", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(41, 110, 180, 0.35), transparent 44%),
+    radial-gradient(circle at 90% 8%, rgba(255, 210, 63, 0.2), transparent 32%),
+    var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.page-shell {
+  width: min(1100px, 100% - 2.5rem);
+  margin-inline: auto;
+  padding-bottom: 4rem;
+}
+
+.hero {
+  padding: 1.25rem 0 2.5rem;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+.hero-content {
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(145deg, rgba(41, 110, 180, 0.16), transparent 62%),
+    linear-gradient(160deg, rgba(5, 17, 32, 0.98), rgba(5, 17, 32, 0.92));
+  backdrop-filter: blur(3px);
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Montserrat", "Inter", "Segoe UI", sans-serif;
+  margin-top: 0;
+  line-height: 1.15;
+}
+
+h1 {
+  margin-bottom: 0.7rem;
+  font-size: clamp(2rem, 6vw, 3.35rem);
+  max-width: 16ch;
+}
+
+.hero-subheadline {
+  margin-top: 0;
+  margin-bottom: 1.2rem;
+  color: var(--text);
+  opacity: 0.84;
+  max-width: 58ch;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.8rem 1.15rem;
+  text-decoration: none;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--ring);
+}
+
+.btn-primary {
+  color: #000;
+  background: linear-gradient(120deg, var(--accent), var(--accent-strong));
+  box-shadow: 0 12px 24px rgba(255, 210, 63, 0.28);
+}
+
+.btn-ghost {
+  color: var(--text);
+  border: 1px solid var(--line);
+  background: rgba(41, 110, 180, 0.22);
+}
+
+.full-width {
+  width: 100%;
+}
+
+.campaign-pill {
+  margin-top: 1rem;
+  margin-bottom: 0;
+  color: var(--text);
+  opacity: 0.84;
+  font-size: 0.9rem;
+}
+
+.hero-visual {
+  min-height: 260px;
+}
+
+.hero-visual-panel {
+  height: 100%;
+  padding: 1.3rem;
+  border-radius: 1rem;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(160deg, rgba(255, 210, 63, 0.1), transparent 55%),
+    linear-gradient(20deg, rgba(41, 110, 180, 0.22), rgba(5, 17, 32, 0.96));
+  box-shadow: inset 0 0 50px rgba(41, 110, 180, 0.14);
+}
+
+.skyline {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: end;
+  gap: 0.4rem;
+  min-height: 82px;
+  margin-bottom: 0.8rem;
+}
+
+.skyline span {
+  display: block;
+  border-radius: 0.35rem 0.35rem 0 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 210, 63, 0.72),
+    rgba(41, 110, 180, 0.4)
+  );
+  border: 1px solid rgba(255, 210, 63, 0.35);
+}
+
+.skyline span:nth-child(1) {
+  height: 40px;
+}
+
+.skyline span:nth-child(2) {
+  height: 76px;
+}
+
+.skyline span:nth-child(3) {
+  height: 52px;
+}
+
+.skyline span:nth-child(4) {
+  height: 70px;
+}
+
+.skyline span:nth-child(5) {
+  height: 48px;
+}
+
+.skyline span:nth-child(6) {
+  height: 64px;
+}
+
+.panel-title {
+  margin-top: 0;
+  font-weight: 700;
+}
+
+.hero-visual-panel ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--text);
+  opacity: 0.84;
+}
+
+.panel-foot {
+  margin-bottom: 0;
+  margin-top: 1rem;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.section {
+  padding: 2rem 0;
+}
+
+.section h2 {
+  margin-bottom: 0.6rem;
+  font-size: clamp(1.55rem, 5vw, 2.4rem);
+}
+
+.section-intro {
+  margin-top: 0;
+  color: var(--text);
+  opacity: 0.84;
+  max-width: 58ch;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+
+.value-card {
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(145deg, rgba(41, 110, 180, 0.12), transparent 70%),
+    linear-gradient(155deg, rgba(5, 17, 32, 0.94), rgba(5, 17, 32, 0.96));
+  border-radius: 0.9rem;
+  padding: 1rem;
+}
+
+.value-card h3 {
+  margin-bottom: 0.45rem;
+}
+
+.value-card p {
+  margin: 0;
+  color: var(--text);
+  opacity: 0.84;
+}
+
+.keynote-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+
+.keynote-card {
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  padding: 1rem;
+  background:
+    linear-gradient(145deg, rgba(41, 110, 180, 0.14), transparent 68%),
+    linear-gradient(155deg, rgba(5, 17, 32, 0.95), rgba(5, 17, 32, 0.98));
+}
+
+.keynote-photo-placeholder {
+  width: 100%;
+  min-height: 180px;
+  border-radius: 0.7rem;
+  border: 1px dashed rgba(255, 210, 63, 0.55);
+  background:
+    radial-gradient(circle at 25% 20%, rgba(255, 210, 63, 0.18), transparent 45%),
+    rgba(41, 110, 180, 0.12);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 1rem;
+  margin-bottom: 0.9rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.keynote-card h3 {
+  margin-bottom: 0.45rem;
+}
+
+.keynote-speaker {
+  margin: 0;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.credibility-grid {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
+}
+
+.stat,
+.attendee-list {
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  padding: 1rem;
+  background:
+    linear-gradient(145deg, rgba(41, 110, 180, 0.13), transparent 65%),
+    linear-gradient(155deg, rgba(5, 17, 32, 0.94), rgba(5, 17, 32, 0.98));
+}
+
+.stat-number {
+  margin: 0;
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.stat-label {
+  margin: 0.2rem 0 0;
+  color: var(--text);
+  opacity: 0.84;
+}
+
+.attendee-list p {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.attendee-list ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--text);
+  opacity: 0.84;
+}
+
+.form-section {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.lead-form {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.35rem;
+}
+
+.lead-form label {
+  font-size: 0.92rem;
+  margin-top: 0.45rem;
+}
+
+.lead-form input,
+.lead-form select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+  background: rgba(41, 110, 180, 0.16);
+  color: var(--text);
+  padding: 0.72rem;
+  font: inherit;
+}
+
+.lead-form select option {
+  color: #000;
+}
+
+.status-message {
+  margin: 0.7rem 0 0;
+  font-size: 0.95rem;
+}
+
+.status-success {
+  color: #ffffff;
+  background: rgba(41, 110, 180, 0.28);
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  padding: 0.65rem 0.75rem;
+}
+
+.status-warning {
+  color: #000000;
+  background: rgba(255, 210, 63, 0.95);
+  border: 1px solid rgba(255, 210, 63, 0.95);
+  border-radius: 0.65rem;
+  padding: 0.65rem 0.75rem;
+}
+
+.final-cta {
+  text-align: center;
+  padding-bottom: 0;
+}
+
+.final-cta p {
+  color: var(--text);
+  opacity: 0.84;
+  margin-top: 0;
+  margin-bottom: 1.1rem;
+}
+
+@media (min-width: 700px) {
+  .hero {
+    padding-top: 2rem;
+  }
+
+  .hero-grid {
+    grid-template-columns: 1.2fr 0.8fr;
+    align-items: stretch;
+  }
+
+  .card-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .keynote-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .credibility-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .lead-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1rem;
+  }
+
+  .lead-form label {
+    margin-top: 0.7rem;
+  }
+
+  .lead-form .btn,
+  .status-message {
+    grid-column: 1 / -1;
+  }
+}
