@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { createLead } from "./api/client";
 
 const UTM_KEYS = [
   "utm_source",
@@ -52,18 +53,6 @@ function saveStoredUtm(utm) {
     sessionStorage.setItem("lv_conf_utm", JSON.stringify(utm));
   } catch {
     // Ignore storage errors in private browsing modes.
-  }
-}
-
-function saveLead(lead) {
-  try {
-    const raw = localStorage.getItem("lv_conf_leads");
-    const leads = raw ? JSON.parse(raw) : [];
-    leads.push(lead);
-    localStorage.setItem("lv_conf_leads", JSON.stringify(leads));
-    return true;
-  } catch {
-    return false;
   }
 }
 
@@ -372,38 +361,19 @@ export default function App() {
       landingHost: window.location.host,
     };
 
-    const localSaved = saveLead(payload);
-    const endpoint = import.meta.env.VITE_LEAD_ENDPOINT;
-
-    if (endpoint) {
-      try {
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) {
-          throw new Error("Lead endpoint request failed.");
-        }
-      } catch {
-        setStatus({
-          type: "warning",
-          message:
-            "Invite request received locally, but remote submission failed. Please verify the endpoint.",
-        });
-        return;
-      }
+    const response = await createLead(payload);
+    if (!response.ok) {
+      setStatus({
+        type: "warning",
+        message: response.data?.error || "Unable to submit request. Please try again.",
+      });
+      return;
     }
 
     setFormData(initialFormState);
     setStatus({
       type: "success",
-      message: localSaved
-        ? "You are on the priority list. We will contact you shortly."
-        : "Submission received. We will contact you shortly.",
+      message: "You are on the priority list. We will contact you shortly.",
     });
   }
 
