@@ -473,6 +473,47 @@ export default function App() {
 
       <main>
         <motion.section
+          className="section credibility"
+          variants={stagger}
+          initial="hidden"
+          whileInView="show"
+          onViewportEnter={() => setCredibilityAnimated(true)}
+          viewport={{ once: true, amount: 0.3 }}
+        >
+          <motion.h2 variants={fadeUp}>Built for Decision Makers</motion.h2>
+          <motion.div className="credibility-grid" variants={stagger}>
+            {credibilityStats.map((stat) => (
+              <motion.div className="stat surface-card" variants={fadeUp} key={stat.key}>
+                <p
+                  className={`stat-number${credibilityAnimated ? " stat-number-animated" : ""}`}
+                >
+                  {statValues[stat.key]}
+                  {stat.suffix}
+                </p>
+                <p className="stat-label">{stat.label}</p>
+              </motion.div>
+            ))}
+            <motion.div className="attendee-list surface-card" variants={fadeUp}>
+              <p
+                className={`stat-number${credibilityAnimated ? " stat-number-animated" : ""}`}
+              >
+                {statValues.networking}+
+              </p>
+              <p className="stat-label">Networking Sessions</p>
+            </motion.div>
+            <motion.div className="stat surface-card" variants={fadeUp}>
+              <p
+                className={`stat-number${credibilityAnimated ? " stat-number-animated" : ""}`}
+              >
+                {statValues[credibilityClosingStat.key]}
+                {credibilityClosingStat.suffix}
+              </p>
+              <p className="stat-label">{credibilityClosingStat.label}</p>
+            </motion.div>
+          </motion.div>
+        </motion.section>
+
+        <motion.section
           className="section"
           id="value"
           variants={stagger}
@@ -597,47 +638,6 @@ export default function App() {
                 </div>
               </motion.article>
             ))}
-          </motion.div>
-        </motion.section>
-
-        <motion.section
-          className="section credibility"
-          variants={stagger}
-          initial="hidden"
-          whileInView="show"
-          onViewportEnter={() => setCredibilityAnimated(true)}
-          viewport={{ once: true, amount: 0.3 }}
-        >
-          <motion.h2 variants={fadeUp}>Built for Decision Makers</motion.h2>
-          <motion.div className="credibility-grid" variants={stagger}>
-            {credibilityStats.map((stat) => (
-              <motion.div className="stat surface-card" variants={fadeUp} key={stat.key}>
-                <p
-                  className={`stat-number${credibilityAnimated ? " stat-number-animated" : ""}`}
-                >
-                  {statValues[stat.key]}
-                  {stat.suffix}
-                </p>
-                <p className="stat-label">{stat.label}</p>
-              </motion.div>
-            ))}
-            <motion.div className="attendee-list surface-card" variants={fadeUp}>
-              <p
-                className={`stat-number${credibilityAnimated ? " stat-number-animated" : ""}`}
-              >
-                {statValues.networking}+
-              </p>
-              <p className="stat-label">Networking Sessions</p>
-            </motion.div>
-            <motion.div className="stat surface-card" variants={fadeUp}>
-              <p
-                className={`stat-number${credibilityAnimated ? " stat-number-animated" : ""}`}
-              >
-                {statValues[credibilityClosingStat.key]}
-                {credibilityClosingStat.suffix}
-              </p>
-              <p className="stat-label">{credibilityClosingStat.label}</p>
-            </motion.div>
           </motion.div>
         </motion.section>
 
