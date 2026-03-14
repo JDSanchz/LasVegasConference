@@ -76,6 +76,8 @@ const initialFormState = {
   socialHandle: "",
 };
 
+const requiredFormKeys = Object.keys(initialFormState);
+
 const valueCards = [
   {
     title: "Curated Executive Network",
@@ -349,8 +351,21 @@ export default function App() {
     event.preventDefault();
     setStatus({ type: "loading", message: "Submitting..." });
 
+    const normalizedFormData = Object.fromEntries(
+      Object.entries(formData).map(([key, value]) => [key, typeof value === "string" ? value.trim() : value]),
+    );
+    const hasEmptyRequiredField = requiredFormKeys.some((key) => !normalizedFormData[key]);
+
+    if (hasEmptyRequiredField) {
+      setStatus({
+        type: "warning",
+        message: "Please complete all required fields before submitting.",
+      });
+      return;
+    }
+
     const payload = {
-      ...formData,
+      ...normalizedFormData,
       utm,
       submittedAt: new Date().toISOString(),
       landingPath: window.location.pathname,
@@ -718,6 +733,7 @@ export default function App() {
                 name="socialHandle"
                 type="text"
                 autoComplete="off"
+                maxLength={120}
                 value={formData.socialHandle}
                 onChange={handleChange}
                 required
